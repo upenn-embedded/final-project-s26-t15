@@ -34,6 +34,8 @@ Argus helps bridge the gap between physical activity and real-time data accessib
 
 ![1773644038002](image/README/1773644038002.jpg)
 
+![1773645373201](image/README/1773645373201.png)
+
 ### 5. Software Requirements Specification (SRS)
 
 **5.1 Definitions, Abbreviations**
