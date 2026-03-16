@@ -28,7 +28,7 @@ Argus helps bridge the gap between physical activity and real-time data accessib
 
 ### 3. System Block Diagram
 
-![1773644054757](image/README/1773644054757.png)
+![1773671196132](image/README/1773671196132.png)
 
 ### 4. Design Sketches
 
