@@ -34,8 +34,6 @@ Argus helps bridge the gap between physical activity and real-time data accessib
 
 ![1773644038002](image/README/1773644038002.jpg)
 
-![1773645373201](image/README/1773645373201.png)
-
 ### 5. Software Requirements Specification (SRS)
 
 **5.1 Definitions, Abbreviations**
@@ -81,6 +79,17 @@ See Section 5.1 for all definitions and abbreviations.
 ### 7. Bill of Materials (BOM)
 
 The major components needed are as follows: Nucleo STM32 F411RE Devboard, 2x XIAO ESP32S3 modules (wifi communication), DFR0934 monochrome transparent OLED (HUD), 9-DOF IMU (motion tracking), a LED to indicate power and debug features, external buck converter to isolate OLED from possibly noisy ESP32 LDO, 5 switches (mode, up, down, toggle, on/off), and a battery.
+
+| Component        | Part Selection      | Justification & Requirement Link                                                                                                                                                                        |
+|------------------|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Main Processor   | NUCLEO-F411RE       | Master Controller: Handles the step-detection algorithm (SRS-02), RTC synchronization (SRS-04), and I2C sensor polling at 50 Hz (SRS-01). Selected for its ability to use interrupts and also industry standard usage. |
+| Wireless Bridge  | 2x XIAO ESP32S3     | Communication Relay: Facilitates the 500ms round-trip display update (SRS-03) and provides the wireless link required by HRS-04. Operates as a simple relay with no application code to satisfy system constraints.  |
+| Transparent HUD  | DFR0934 OLED        | Visual Interface: Meets HRS-02 for small-form-factor mounting and supports the multi-mode display requirements (Time, Steps, Compass) outlined in SRS-05.                                               |
+| Motion Tracking  | 9-DOF IMU (BNO085)  | Navigation & Fitness: Provides the 3-axis Accel/Gyro/Mag data required by HRS-01. Enables compass accuracy within 22.5 degrees (SRS-07) and step detection (SRS-02).                                  |
+| Power Isolation  | Buck Converter      | System Stability: Ensures that WiFi bursts do not cause brownouts or electrical issues, allowing the battery to meet the 15 to 30 minute continuous run-time requirement (HRS-06).                      |
+| User Input       | 5x Tactile Switches | Manual Control: Satisfies HRS-03 for registration within 100ms. Enables mode toggling (SRS-05) and system power management.                                                                    |
+| Power Source     | 1S LiPo Battery     | Portable Battery: Selected to meet the weight requirements for glasses-mounting while satisfying the run-time specifications of HRS-06.                                                                  |
+| Status Indicator | Power LED           | Visual Feedback: Provides an immediate hardware-level On state to confirm the success of power-on sequences defined in HRS-03.                                                                        |
 
 https://docs.google.com/spreadsheets/d/1X19fjBgSUE6MPIu0bsC3vZN--DqyP1meB3pUoyBd7XM/edit?usp=sharing
 
