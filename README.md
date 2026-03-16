@@ -57,7 +57,7 @@ IMU - Inertial Measurement Unit. Accelerator/gyroscope sensor for step detection
 | SRS-05 | The display shall cycle through atleast three different modes: time view, step count view, and compass view.                                                                                             |
 | SRS-06 | The STM32 shall receive and process data from the base ESP32 over UART within 100ms of transmission.                                                                                                     |
 | SRS-07 | The STM32 shall compute the compass direction from the magnetometer data from the IMU and display cardinal direction (N, NE, E, SE, S, SW, W, NW) accurate to within +/- 22.5 degrees after calibration. |
-| SRS-08 | The OLED display will communicate using SPI translated through UART wirelessly between the two ESP32S3 modules to maximize screen data bandwidth. |
+| SRS-08 | The OLED display will communicate using SPI translated through UART wirelessly between the two ESP32S3 modules to maximize screen data bandwidth.                                                        |
 
 ### 6. Hardware Requirements Specification (HRS)
 
@@ -67,18 +67,18 @@ See Section 5.1 for all definitions and abbreviations.
 
 **6.2 Functionality**
 
-| ID     | Description                                                                                                                                                                                                           |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| HRS-01 | The system shall use an IMU with atleast 3-axis accelerometer, 3-axis gyroscope, and 3-axis magnetometer capabilities, communicating over I2C, to provide motion data for step-count and compass data for direction. |
-| HRS-02 | The display shall be smaller enough to mount on glasses frames and support atleast two lines of text output.                                                                                                          |
-| HRS-03 | Several push buttons shall be mounted on the glasses frame and be able to register a press within 100ms of acutuation to enable various functionalities such as toggling modes, changing parameters, and powering on and off.                                                                                                       |
-| HRS-04 | Two ESP32 modules shall be able to maintain wireless connection with a round-trip latency of less than 500ms within 5m of distance.                                                                                   |
-| HRS-05 | The STM32 shall communicate with the base ESP32 over UART at a baud rate of atleast 9600 bps.                                                                                                                         |
-| HRS-06 | The glasses shall be powered by a battery capable of powering the glasses for atleast 15-30 minutes continuously.                                                                                                        |
+| ID     | Description                                                                                                                                                                                                                   |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HRS-01 | The system shall use an IMU with atleast 3-axis accelerometer, 3-axis gyroscope, and 3-axis magnetometer capabilities, communicating over I2C, to provide motion data for step-count and compass data for direction.         |
+| HRS-02 | The display shall be smaller enough to mount on glasses frames and support atleast two lines of text output.                                                                                                                  |
+| HRS-03 | Several push buttons shall be mounted on the glasses frame and be able to register a press within 100ms of acutuation to enable various functionalities such as toggling modes, changing parameters, and powering on and off. |
+| HRS-04 | Two ESP32 modules shall be able to maintain wireless connection with a round-trip latency of less than 500ms within 5m of distance.                                                                                           |
+| HRS-05 | The STM32 shall communicate with the base ESP32 over UART at a baud rate of atleast 9600 bps.                                                                                                                                 |
+| HRS-06 | The glasses shall be powered by a battery capable of powering the glasses for atleast 15-30 minutes continuously.                                                                                                             |
 
 ### 7. Bill of Materials (BOM)
 
-The major components needed are as follows: Nucleo STM32 F411RE Devboard, 2x XIAO ESP32S3 modules (wifi communication), DFR0934 monochrome transparent OLED (HUD), 9-DOF IMU (motion tracking), a LED to indicate power and debug features, external buck converter to isolate OLED from possibly noisy ESP32 LDO, 5 switches (mode, up, down, toggle, on/off), and a battery. 
+The major components needed are as follows: Nucleo STM32 F411RE Devboard, 2x XIAO ESP32S3 modules (wifi communication), DFR0934 monochrome transparent OLED (HUD), 9-DOF IMU (motion tracking), a LED to indicate power and debug features, external buck converter to isolate OLED from possibly noisy ESP32 LDO, 5 switches (mode, up, down, toggle, on/off), and a battery.
 
 https://docs.google.com/spreadsheets/d/1X19fjBgSUE6MPIu0bsC3vZN--DqyP1meB3pUoyBd7XM/edit?usp=sharing
 
