@@ -77,12 +77,12 @@ On Demo day, the smart glasses will be demonstrated by having someone wear them.
 
 ### 9. Sprint Planning
 
-| Milestone  | Functionality Achieved | Distribution of Work |
-| ---------- | ---------------------- | -------------------- |
-| Sprint #1  |                        |                      |
-| Sprint #2  |                        |                      |
-| MVP Demo   |                        |                      |
-| Final Demo |                        |                      |
+| Milestone  | Functionality Achieved                                                                                                                                                                                                                                                                                                                            | Distribution of Work                                                                        |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Sprint #1  | 1] Get individual components to connect to each other, i.e STM32 and ESP32.<br />2] Verify UART connection between STM32 and ESP32, wifi-connection, and confirm that STM32 can recieve button press.<br />3] Begin prototyping glasses frame + begin calibrating screen for close-up view.<br />4] synchronize RTC time with NTP time via wifi. | Seth - Firmware<br />Jerry - Display + Firmware<br />Thomas - Glasses Frame                 |
+| Sprint #2  | 1] Get STM32 to receive IMU data over I2C and display steps / compass direction<br />2] Get display to show text/time.<br />3] Finalize power source for the glasses display + ESP32.<br />4] Finalize Glasses Frame and test it for proper fitting/balance.                                                                                      | Seth - Firmware<br />Jerry - Display + Peripheral Integration<br />Thomas - Glasses Frame  |
+| MVP Demo   | 1] Get steps algorithm and compass direction working.<br />2] Fully integrate ESP32 and display onto glasses frame.<br />3] Ensure that calibration + synchronizing of RTC time work as expected.                                                                                                                                                 | Seth - Firmware<br />Jerry - Peripheral Integration + Calibration<br />Thomas - Integration |
+| Final Demo | Ensure that final product is fully functional and meets requirements.                                                                                                                                                                                                                                                                             |                                                                                             |
 
 **This is the end of the Project Proposal section. The remaining sections will be filled out based on the milestone schedule.**
 
