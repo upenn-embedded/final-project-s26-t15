@@ -32,7 +32,7 @@ Argus helps bridge the gap between physical activity and real-time data accessib
 
 ### 4. Design Sketches
 
-The fram of the glasses will be customized through 3D printing and laser cutting in order to house the hardware components.
+The frame of the glasses will be customized through 3D printing and laser cutting in order to house the hardware components.
 
 ![1773644038002](image/README/1773644038002.jpg)
 
