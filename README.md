@@ -113,13 +113,13 @@ On Demo day, the smart glasses will be demonstrated by having someone wear them.
 ## Sprint Review #1
 
 ### Last week's progress
+
 1. Finalized most of BOM and determined general design of prototype that we are now working towards.
-
 2. Ordered parts for parts of the deisgn that we are more certain on
-
 3. Planning design and build schedule.
 
 ### Current state of project
+
 1. Found several issues with current design mostly surrounding difficulty of writing I2C driver with our IMU.
 
 -> Strange behavior listed in errata of F411 where clock stretching results in miscommunication between master and slave, which is problematic since the previous IMUs chosen (BNO085 or BNO055) both use it. Also discovered these devices don't contain built in step counter and I2C will be very difficult to write.
@@ -130,12 +130,22 @@ On Demo day, the smart glasses will be demonstrated by having someone wear them.
 
 -> Basic interrupt or GPIO functionality
 
-3. Prototype CAD is in (good) progress
+3. Calculated object distance (d0) constraints from a target virtual image distance (d1) and magnifcation (m0) constraint.
+
+   [d0 calculator (32)](https://www.desmos.com/calculator/zhws0yhlh0)
+
+   ![1775258313158](image/README/1775258313158.png)
+4. Designed the mechanical layout for the hardware and optics Determined methods to reduce d0 due to limited focal length, and reduce mount size by adding a secondary mirror.
+
+   ![1775258730277](image/README/1775258730277.jpg)
+5. Prototyped mounts to hold hardware so they can be clipped onto glasses.
+
+   ![1775259339481](image/README/1775259339481.png)
 
 ![1775239160908](image/README/1775239160908.png)
-:( The only parts we have right now. Working on writing firmware.
 
 ### Next week's plan
+
 1. Finish full implementation of step counter (Seth)
 
 -> Requires full functionality of SPI drivers
@@ -164,7 +174,7 @@ On Demo day, the smart glasses will be demonstrated by having someone wear them.
 
 5. CAD and print out a prototype (Thomas)
 
--> 3D-print a prototype (or gather a pair of real glass) and mount a dummy weight mimicking our device onto glasses and test weight distribution. 
+-> 3D-print a prototype (or gather a pair of real glass) and mount a dummy weight mimicking our device onto glasses and test weight distribution.
 
 -> Est. time: 3-6hrs
 
@@ -175,6 +185,7 @@ Jerry: Electrical hardware and writing SPI driver
 Thomas: Mechanical design and prototyping
 
 In case anyone is not available to work on something, everyone is reading the STM32 textbook and is proficient in mechanical design so we can assist each other if extra work is needed.
+
 ## Sprint Review #2
 
 ### Last week's progress
