@@ -113,11 +113,68 @@ On Demo day, the smart glasses will be demonstrated by having someone wear them.
 ## Sprint Review #1
 
 ### Last week's progress
+1. Finalized most of BOM and determined general design of prototype that we are now working towards.
+
+2. Ordered parts for parts of the deisgn that we are more certain on
+
+3. Planning design and build schedule.
 
 ### Current state of project
+1. Found several issues with current design mostly surrounding difficulty of writing I2C driver with our IMU.
+
+-> Strange behavior listed in errata of F411 where clock stretching results in miscommunication between master and slave, which is problematic since the previous IMUs chosen (BNO085 or BNO055) both use it. Also discovered these devices don't contain built in step counter and I2C will be very difficult to write.
+
+-> Switched to LSM6DS0 because it contains step counter and works over SPI. Since screen also uses SPI, it makes it convenient so we can write one driver that is also easier to write.
+
+2. Button presses and interacting with the STM32F411 figured out
+
+-> Basic interrupt or GPIO functionality
+
+3. Prototype CAD is in (good) progress
+
+![1775239160908](image/README/1775239160908.png)
+:( The only parts we have right now. Working on writing firmware.
 
 ### Next week's plan
+1. Finish full implementation of step counter (Seth)
 
+-> Requires full functionality of SPI drivers
+
+-> Get it to read out onto a serial output
+
+-> Est. time: 1hr if SPI driver is working
+
+2. (If screen arrives) Write library and implement basic functionality of screen (Jerry)
+
+-> Allow for some basic interfacing with screen, determine how to set the screen color or edit pixels
+
+-> Est. time: 2-3hrs
+
+3. Write SPI driver (Jerry)
+
+-> SPI driver has all necessary features for at least the IMU at this time, can initialize and operate independently without excessive debugging or compatibility issues with devices
+
+-> Est. time: 3-6hrs
+
+4. Write IMU driver (Seth)
+
+-> Implement all major functions (get linear movement, step tracking, etc)
+
+-> Est. time: 3-6hrs
+
+5. CAD and print out a prototype (Thomas)
+
+-> 3D-print a prototype (or gather a pair of real glass) and mount a dummy weight mimicking our device onto glasses and test weight distribution. 
+
+-> Est. time: 3-6hrs
+
+Hopefully we also get some parts in.
+Work Distribution:
+Seth: Firmware and development of STM32 portions
+Jerry: Electrical hardware and writing SPI driver
+Thomas: Mechanical design and prototyping
+
+In case anyone is not available to work on something, everyone is reading the STM32 textbook and is proficient in mechanical design so we can assist each other if extra work is needed.
 ## Sprint Review #2
 
 ### Last week's progress
