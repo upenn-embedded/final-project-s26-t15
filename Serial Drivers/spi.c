@@ -26,7 +26,7 @@
 * @brief		Initiate SPI bus and configure relevant SPI pins (SPI1 for IMU, SPI4 for LCD)
 * @note
 *****************************************************************************/
-void spi_init(void);                                // Initialize SPI comms
+void spi1_init(void);                                // Initialize SPI comms
 {
 	RCC->AHB1ENR |= (1 << GPIOAEN);         // Ungate GPIOA clock (enable A pins access to clk)
 
@@ -112,11 +112,33 @@ void spi1_receive(uint8_t *data, uint32_t size)
     uint8_t temp;
     while(i < size)
     {
-       
+       while (size) {
+            SPI1->DR = 0; // Send fake data to generate clock
+            while (!(SPI1->SR & (SR_RXNE))) {} // Wait for RXNE flag
+            *data++ = (SPI1->DR); // Read received data
+            size--;
+       }
     }
 }
 
-void cs_set(void)                                  // Set chip select
+void cs_enable(void)
 {
-    GPIOA &= ~(1U << 9);                 // Set PA9 high to clear CS (active low)
+    GPIOA->ODR &= ~(1U << 9);
+}
+
+void cs_disable(void)                                  // Set chip select
+{
+    GPIOA->ODR |= (1U << 9);                 // Set PA9 high to clear CS (active low)
+}
+
+/**************************************************************************//**
+* @fn			uint8_t spi1_transfer(uint8_t data)
+* @brief		Send a byte over SPI and receive one back, typically for reading a register val from IMU
+* @note
+*****************************************************************************/
+uint8_t spi1_transfer(uint8_t data) {
+    while(!(SPI1->SR & (1U << 1))); // Wait for TXE
+    SPI1->DR = data;
+    while(!(SPI1->SR & (1U << 0))); // Wait for RXNE
+    return (uint8_t) (SPI1->DR);
 }
