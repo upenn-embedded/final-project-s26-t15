@@ -8,12 +8,14 @@
 #include "stm32f4xx.h" // Defines aliases
 #include <stdint.h>
 
-#ifndef spi_h
-#define spi_h
+#ifndef SPI_H_
+#define SPI_H_
 
-void spi_init(void);                                // Initialize SPI comms
+void spi1_init(void);                                // Initialize SPI comms
 void spi1_write(uint8_t *data, uint32_t size);      // Write byte to SPI bus
-void cs_set(void);                                  // Set chip select
-void cs_clear(void);                                // Clear chip select
-void spi1_receive(uint8_t *data, uint32_t size);     // Read bytes from SPI bus
-#endif /* spi_h */
+void cs_enable(void);                               // Set chip select
+void cs_disable(void);                              // Clear chip select
+void spi1_receive(uint8_t *data, uint32_t size);    // Read bytes from SPI bus
+void spi1_transfer(uint8_t data);                   // Transfer a byte over SPI and receive the response
+
+#endif
