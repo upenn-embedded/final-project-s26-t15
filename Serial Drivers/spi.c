@@ -82,17 +82,22 @@ void spi1_init(void);                                // Initialize SPI comms
     SPI1->CR1 |= (1U << SPE);               // Enable SPI1
 }
 
-void spi1_write(uint8_t *data,uint32_t size)
+
+/**************************************************************************//**
+* @fn			void spi1_write(uint8_t *data, uint32_t size)
+* @brief		Write a value to a register in the IMU by sending the register address then the data byte
+* @brief        Mostly for configuring settings
+* @note
+*****************************************************************************/
+void spi1_write(uint8_t *data, uint32_t size)
 {
-    uint32_t i=0;
     uint8_t temp;
-    while(i < size)
+    while (size > 0)
     {
-        // Wait until TXE is set
-        while(!(SPI1->SR & (SR_TXE))){}
-        // Write data to data register
-        SPI1->DR = data[i];
-        i++;
+        while (!(SPI1->SR & (SR_TXE))) {} // Wait for TXE flag, transmitter empty
+        SPI1->DR = *data; // Write data to data register
+        data++;
+        size--;
     }
     
     // Wait until TXE is set
@@ -106,27 +111,25 @@ void spi1_write(uint8_t *data,uint32_t size)
     temp = SPI1->SR;
 }
 
-void spi1_receive(uint8_t *data, uint32_t size)
+uint8_t spi1_read(uint8_t *data, uint32_t size)
 {
-    uint32_t i=0;
-    uint8_t temp;
-    while(i < size)
+    while (size > 0)
     {
-       while (size) {
-            SPI1->DR = 0; // Send fake data to generate clock
-            while (!(SPI1->SR & (SR_RXNE))) {} // Wait for RXNE flag
-            *data++ = (SPI1->DR); // Read received data
-            size--;
-       }
+        while (!(SPI1->SR & (SR_TXE))) {} // Wait for TXE flag, transmitter empty
+        SPI1->DR = 0x00; // Send dummy byte to generate clock
+        while (!(SPI1->SR & (SR_RXNE))) {} // Wait for RXNE flag, receiver full
+        *data = (uint8_t)(SPI1->DR); // Read received data
+        data++;
+        size--;
     }
 }
 
-void cs_enable(void)
+void cs1_enable(void)
 {
     GPIOA->ODR &= ~(1U << 9);
 }
 
-void cs_disable(void)                                  // Set chip select
+void cs1_disable(void)                                  // Set chip select
 {
     GPIOA->ODR |= (1U << 9);                 // Set PA9 high to clear CS (active low)
 }
@@ -137,8 +140,8 @@ void cs_disable(void)                                  // Set chip select
 * @note
 *****************************************************************************/
 uint8_t spi1_transfer(uint8_t data) {
-    while(!(SPI1->SR & (1U << 1))); // Wait for TXE
+    while(!(SPI1->SR & (SR_TXE))); // Wait for TXE
     SPI1->DR = data;
-    while(!(SPI1->SR & (1U << 0))); // Wait for RXNE
+    while(!(SPI1->SR & (SR_RXNE))); // Wait for RXNE
     return (uint8_t) (SPI1->DR);
 }

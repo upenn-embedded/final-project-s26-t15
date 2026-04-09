@@ -186,6 +186,9 @@ Thomas: Mechanical design and prototyping
 
 In case anyone is not available to work on something, everyone is reading the STM32 textbook and is proficient in mechanical design so we can assist each other if extra work is needed.
 
+## April 9th, 2026
+As of now, the main SPI driver is written and the IMU driver is in progress. Using the textbook as a reference, we're trying to write the driver for the LSM6DS0 so that it can use SPI properly. The mechanical design is nearly done (insert screenshot). We are also able to register basic GPIO input and some input capture using buttons so far on the STM32.
+
 ## Sprint Review #2
 
 ### Last week's progress

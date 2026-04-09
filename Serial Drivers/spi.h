@@ -15,7 +15,7 @@ void spi1_init(void);                                // Initialize SPI comms
 void spi1_write(uint8_t *data, uint32_t size);      // Write byte to SPI bus
 void cs_enable(void);                               // Set chip select
 void cs_disable(void);                              // Clear chip select
-void spi1_receive(uint8_t *data, uint32_t size);    // Read bytes from SPI bus
-void spi1_transfer(uint8_t data);                   // Transfer a byte over SPI and receive the response
+uint8_t spi1_read(uint8_t *data, uint32_t size);    // Read bytes from SPI bus
+uint8_t spi1_transfer(uint8_t data);                   // Transfer a byte over SPI and receive the response
 
 #endif
