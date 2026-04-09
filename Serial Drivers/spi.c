@@ -8,6 +8,7 @@
 
 
 #include "spi.h"
+#include <stdint.h>
 
 // Enable clock access to GPIOA pins
 
@@ -26,14 +27,14 @@
 * @brief		Initiate SPI bus and configure relevant SPI pins (SPI1 for IMU, SPI4 for LCD)
 * @note
 *****************************************************************************/
-void spi1_init(void);                                // Initialize SPI comms
+void spi1_init(void)                                // Initialize SPI comms
 {
-	RCC->AHB1ENR |= (1 << GPIOAEN);         // Ungate GPIOA clock (enable A pins access to clk)
+	RCC->AHB1ENR |= (RCC_AHB1ENR_GPIOAEN);         // Ungate GPIOA clock (enable A pins access to clk)
 
     /*
     Initialize the following pins for SPI1 (IMU)
     */
-    RCC->APB2ENR |= (1 << SPI1EN);          // Enable SPI1 module clk access (enable SPI1 access to clk)
+    RCC->APB2ENR |= (1 << RCC_APB2ENR_SPI1EN);          // Enable SPI1 module clk access (enable SPI1 access to clk)
     // PA5 - SCK
     GPIOA->MODER &= ~(1U << 10);            // Set PA5 in alternate mode
     GPIOA->MODER |= (1U << 11);
@@ -66,20 +67,20 @@ void spi1_init(void);                                // Initialize SPI comms
     SPI1->CR1 &=~(1U<<4);
     SPI1->CR1 &=~(1U<<5);
 
-    SPI1->CR1 |= (1U << MSTR);              // Set as master
+    SPI1->CR1 |= (SPI_CR1_MSTR);              // Set as master
     
-    SPI1->CR1 |= (1U << CPOL);              // Set clock polarity to 1 (idle high
-    SPI1->CR1 |= (1U << CPHA);              // Set clock phase to 1 (data captured on second edge)
+    SPI1->CR1 |= (SPI_CR1_CPOL);              // Set clock polarity to 1 (idle high
+    SPI1->CR1 |= (SPI_CR1_CPHA);              // Set clock phase to 1 (data captured on second edge)
 
-    SPI1->CR1 &= ~(1U << LSBFIRST);         // Set MSB first
-    SPI1->CR1 &= ~(1U << RXONLY);           // Set full duplex
+    SPI1->CR1 &= ~(LSBFIRST);         // Set MSB first
+    SPI1->CR1 &= ~(RXONLY);           // Set full duplex
 
-    SPI1->CR1 &= ~(1U << DFF);              // Set 8-bit data frame format
+    SPI1->CR1 &= ~(DFF);              // Set 8-bit data frame format
 
-    SPI1->CR1 |= (1 << SSI);                // Set internal slave select
-    SPI1->CR1 |= (1 << SSM);                // Enable software slave management (using CS as GPIO)
+    SPI1->CR1 |= (SPI_CR1_SSI);                // Set internal slave select
+    SPI1->CR1 |= (SPI_CR1_SSM);                // Enable software slave management (using CS as GPIO)
 
-    SPI1->CR1 |= (1U << SPE);               // Enable SPI1
+    SPI1->CR1 |= (SPI_CR1_SPE);               // Enable SPI1
 }
 
 
@@ -111,6 +112,12 @@ void spi1_write(uint8_t *data, uint32_t size)
     temp = SPI1->SR;
 }
 
+/**************************************************************************//**
+* @fn			void spi1_read(uint8_t *data, uint32_t size)
+* @brief		Read a register 
+* @brief        Mostly for configuring settings
+* @note
+*****************************************************************************/
 uint8_t spi1_read(uint8_t *data, uint32_t size)
 {
     while (size > 0)
@@ -122,6 +129,7 @@ uint8_t spi1_read(uint8_t *data, uint32_t size)
         data++;
         size--;
     }
+    return data;
 }
 
 void cs1_enable(void)

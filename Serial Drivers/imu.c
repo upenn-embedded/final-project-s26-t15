@@ -1,5 +1,5 @@
 /*
- * spi.c
+ * imu.c
  *  Created on: 04/03/2026
  *  Author: Jerry Zhang
  *  Description: SPI driver for LCD display
@@ -22,7 +22,7 @@ uint8_t imu_init(void) {
 
     imu_write(EMB_FUNC_CFG_ACCESS, FUNC_CFG_ACCESS); // enable access to embedded functions
     imu_write(EMB_FUNC_EN_A, IMU_PEDO_EN); // enable pedometer
-    imu_write(EMB_FUNC_CFG_ACCESS, 0x99); // disable access to embedded functions
+    imu_write(EMB_FUNC_CFG_ACCESS, 0x00); // disable access to embedded functions
 
     return 1;                               // success
 }
@@ -54,25 +54,24 @@ uint8_t imu_read(uint8_t reg_addr) {
 }
 
 /**************************************************************************//**
-* @fn			uint8_t imu_read_multiple(uint8_t reg_addr, uint8_t *buffer, uint32_t size)
+* @fn			void imu_read_multiple(uint8_t reg_addr, uint8_t *buffer, uint32_t size)
 * @brief		Read size number of bytes into a buffer starting from register address
 * @note
 *****************************************************************************/
-uint8_t imu_read_multiple(uint8_t reg_addr, uint8_t *buffer, uint32_t size) {
+void imu_read_multiple(uint8_t reg_addr, uint8_t *buffer, uint32_t size) {
     cs1_enable();
     spi1_transfer(reg_addr | 0x80); // Set MSB to 1 to read
     spi1_read(buffer, size);        // Read multiple bytes into buffer
     cs1_disable();
-    return buffer;
 }
 
 /**************************************************************************//**
-* @fn			uint8_t imu_readxyz(uint8_t reg_addr, uint8_t *buffer)
+* @fn			void imu_readxyz(uint8_t reg_addr, uint8_t *buffer)
 * @brief		Read 6 bytes of data for x, y, z axis readings
 * @note
 *****************************************************************************/
-uint8_t imu_readxyz(uint8_t reg_addr, uint8_t *buffer) {
-    return imu_read_multiple(reg_addr, buffer, 6); // Read 6 bytes for x, y, z
+void imu_readxyz(uint8_t reg_addr, uint8_t *buffer) {
+    imu_read_multiple(reg_addr, buffer, 6); // Read 6 bytes for x, y, z
 }
 
 
@@ -82,11 +81,15 @@ uint8_t imu_readxyz(uint8_t reg_addr, uint8_t *buffer) {
 * @note
 *****************************************************************************/
 uint16_t read_steps(void) {
-    cs1_enable();
     uint8_t stepbuffer[2];
+    imu_write(EMB_FUNC_CFG_ACCESS, FUNC_CFG_ACCESS); // enable access to embedded functions
+
+    cs1_enable();
     spi1_transfer(STEP_COUNTER_L | 0x80);       // read the device
     spi1_read (stepbuffer, 2);                  // read consecutive L and H bits
     cs1_disable();
+
+    imu_write(EMB_FUNC_CFG_ACCESS, 0x00); // disable access to embedded functions
     return (stepbuffer[1] << 8) | stepbuffer[0]; // return combined bytes
 }
 
