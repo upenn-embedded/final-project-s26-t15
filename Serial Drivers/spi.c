@@ -29,12 +29,12 @@
 *****************************************************************************/
 void spi1_init(void)                                // Initialize SPI comms
 {
-	RCC->AHB1ENR |= (RCC_AHB1ENR_GPIOAEN);         // Ungate GPIOA clock (enable A pins access to clk)
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;         // Ungate GPIOA clock (enable A pins access to clk)
 
     /*
     Initialize the following pins for SPI1 (IMU)
     */
-    RCC->APB2ENR |= (1 << RCC_APB2ENR_SPI1EN);          // Enable SPI1 module clk access (enable SPI1 access to clk)
+    RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;          // Enable SPI1 module clk access (enable SPI1 access to clk)
     // PA5 - SCK
     GPIOA->MODER &= ~(1U << 10);            // Set PA5 in alternate mode
     GPIOA->MODER |= (1U << 11);
@@ -63,19 +63,19 @@ void spi1_init(void)                                // Initialize SPI comms
     GPIOA->MODER |= (1U << 18);             // Set PA9 as general purpose output for CS
     GPIOA->MODER &= ~(1U << 19);
 
-    SPI1->CR1 |=(1U<<3);                    // Set Prescaler to 4 (001)
-    SPI1->CR1 &=~(1U<<4);
-    SPI1->CR1 &=~(1U<<5);
+    SPI1->CR1 |= (1U << 3);                    // Set Prescaler to 4 (001)
+    SPI1->CR1 &= ~(1U << 4);
+    SPI1->CR1 &= ~(1U << 5);
 
     SPI1->CR1 |= (SPI_CR1_MSTR);              // Set as master
     
-    SPI1->CR1 |= (SPI_CR1_CPOL);              // Set clock polarity to 1 (idle high
-    SPI1->CR1 |= (SPI_CR1_CPHA);              // Set clock phase to 1 (data captured on second edge)
+    SPI1->CR1 &= ~(SPI_CR1_CPOL);              // Set clock polarity to 0 (idle low
+    SPI1->CR1 &= ~(SPI_CR1_CPHA);              // Set clock phase to 0 (data captured on first edge)
 
-    SPI1->CR1 &= ~(LSBFIRST);         // Set MSB first
-    SPI1->CR1 &= ~(RXONLY);           // Set full duplex
+    SPI1->CR1 &= ~(SPI_CR1_LSBFIRST);         // Set MSB first
+    SPI1->CR1 &= ~(SPI_CR1_RXONLY);           // Set full duplex
 
-    SPI1->CR1 &= ~(DFF);              // Set 8-bit data frame format
+    SPI1->CR1 &= ~(SPI_CR1_DFF);              // Set 8-bit data frame format
 
     SPI1->CR1 |= (SPI_CR1_SSI);                // Set internal slave select
     SPI1->CR1 |= (SPI_CR1_SSM);                // Enable software slave management (using CS as GPIO)
@@ -95,17 +95,17 @@ void spi1_write(uint8_t *data, uint32_t size)
     uint8_t temp;
     while (size > 0)
     {
-        while (!(SPI1->SR & (SR_TXE))) {} // Wait for TXE flag, transmitter empty
+        while (!(SPI1->SR & (SPI_SR_TXE))) {} // Wait for TXE flag, transmitter empty
         SPI1->DR = *data; // Write data to data register
         data++;
         size--;
     }
     
     // Wait until TXE is set
-    while(!(SPI1->SR & (SR_TXE))){}
+    while(!(SPI1->SR & (SPI_SR_TXE))){}
 
     // Wait for BUSY flag to reset
-    while((SPI1->SR & (SR_BSY))){}
+    while((SPI1->SR & (SPI_SR_BSY))){}
 
     // Clear OVR flag
     temp = SPI1->DR;
@@ -122,9 +122,9 @@ uint8_t spi1_read(uint8_t *data, uint32_t size)
 {
     while (size > 0)
     {
-        while (!(SPI1->SR & (SR_TXE))) {} // Wait for TXE flag, transmitter empty
+        while (!(SPI1->SR & (SPI_SR_TXE))) {} // Wait for TXE flag, transmitter empty
         SPI1->DR = 0x00; // Send dummy byte to generate clock
-        while (!(SPI1->SR & (SR_RXNE))) {} // Wait for RXNE flag, receiver full
+        while (!(SPI1->SR & (SPI_SR_RXNE))) {} // Wait for RXNE flag, receiver full
         *data = (uint8_t)(SPI1->DR); // Read received data
         data++;
         size--;
@@ -148,8 +148,10 @@ void cs1_disable(void)                                  // Set chip select
 * @note
 *****************************************************************************/
 uint8_t spi1_transfer(uint8_t data) {
-    while(!(SPI1->SR & (SR_TXE))); // Wait for TXE
+    while(!(SPI1->SR & (SPI_SR_TXE))); // Wait for TXE
     SPI1->DR = data;
-    while(!(SPI1->SR & (SR_RXNE))); // Wait for RXNE
-    return (uint8_t) (SPI1->DR);
+    while(!(SPI1->SR & (SPI_SR_RXNE))); // Wait for RXNE
+    uint8_t received_data = (uint8_t) SPI1->DR;
+    uint8_t status_burner = SPI1->SR;
+    return received_data;
 }

@@ -3,8 +3,8 @@
  *  Created on: 04/03/2026
  *  Author: Jerry Zhang
  *  Description: SPI driver for LCD display
- * 
- */ 
+ *
+ */
 
 
 #include "imu.h"
@@ -82,15 +82,16 @@ void imu_readxyz(uint8_t reg_addr, uint8_t *buffer) {
 *****************************************************************************/
 uint16_t read_steps(void) {
     uint8_t stepbuffer[2];
+
+    for(volatile int i = 0; i < 2000; i++);
     imu_write(EMB_FUNC_CFG_ACCESS, FUNC_CFG_ACCESS); // enable access to embedded functions
 
-    cs1_enable();
-    spi1_transfer(STEP_COUNTER_L | 0x80);       // read the device
-    spi1_read (stepbuffer, 2);                  // read consecutive L and H bits
-    cs1_disable();
+    uint8_t step_l = imu_read(STEP_COUNTER_L);
+    uint8_t step_h = imu_read(STEP_COUNTER_H);
 
     imu_write(EMB_FUNC_CFG_ACCESS, 0x00); // disable access to embedded functions
-    return (stepbuffer[1] << 8) | stepbuffer[0]; // return combined bytes
+    for(volatile int i = 0; i < 2000; i++);
+    return (step_h << 8) | step_l; // return combined bytes
 }
 
 
