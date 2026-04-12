@@ -190,10 +190,41 @@ In case anyone is not available to work on something, everyone is reading the ST
 As of now, the main SPI driver is written and the IMU driver is in progress. Using the textbook as a reference, we're trying to write the driver for the LSM6DS0 so that it can use SPI properly. The mechanical design is nearly done (insert screenshot). We are also able to register basic GPIO input and some input capture using buttons so far on the STM32.
 
 ## Sprint Review #2
+This week, we targeted integrating various sensors and drivers, making sure that our devices are taking and outputting the proper data. Additionally, we hoped to get some of the new parts (OLED, lenses, Adafruit Blackpill STM32) so that we could move to our intended hardware setup. While the lenses and Blackpill STM32 have not arrived, the OLED has arrived.
 
 ### Last week's progress
+Last week, we made some important progress on the integration of sensors and development of the blueprint of the device. Using the basic plan we had devised last week to primarily work on device drivers, communication protocols, and developing the optical system, we have reached a position where we are satisfied with current progress and are on track to create a MVP.
+
+The table below reiterates some of our barebones MVP guidelines:
+| MVP Goal                               | Description                                                                                                                                                                                                           | Status                                                                                                                                                                                    |
+|----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| #1. IMU Step Counter                   | The smartglasses will contain basic motion tracking capabilities, using an IMU to track the wearer's steps.                                                                                                           | Complete. The SPI and IMU drivers have been fully written for the LSM6DS0, but there are other issues (written below).                                                                    |
+| #2. On-Screen Timer System             | A wearer will be able to set and be notified of timers for use such as in timing activities like cooking or taking a practice exam.                                                                                   | Incomplete. The timer system will be created through the use of hardware timers, the software has not been written yet.                                                                   |
+| #3. 2-4 Buttons for Screen Control     | The smartglasses will have several buttons to interface with the GUI to interact with features such as the step counter, timer system, or compass.                                                                    | Incomplete. Basic GPIO features have been tested, but software must be written. This will be complete after all other subsystems are operable.                                            |
+| #4. Optical Waveguide HUD              | The smartglasses will contain an optical waveguide to translate the light of the OLED to a beamsplitter which will reflect the light into the wearer's eyes, giving the illusion of a "floating" HUD in their vision. | In Progress. The OLED has arrived and its drivers are currently being developed. The calculations for the lens size and mirrors have also been completed.                                 |
+| #5. CAD of Glasses or Waveguide Holder | The smartglasses will exist in the form of either a clip-on attachment to an existing pair of glasses or as a standalone frame.                                                                                       | In Progress. The CAD has partially been completed with some additional testing and printing of the parts needed. Additionally, not all of the optical hardware (mirrors) has arrived yet. |
+| #6. Navigation System                  | The smartglasses will contain a basic navigation system consisting of a cardinal compass to allow the user to receive navigation data. This may extend outwards into the usage of GPS or other features.              | The initial IMU used (LSM6DS0) does not contain the magnetometer required for the compass. A version with the magnetometer has been ordered.                                              |
 
 ### Current state of project
+To summarize, we have written drivers and tested functionality for the IMU step counter subsystem. The video below shows (poorly) the operation of the step counter:
+
+https://drive.google.com/file/d/1mDCpxerKAkAiZ3uGaSlx3KKA8HsJcfL3/view?usp=sharing
+
+This link will be updated to a YT video in the future.
+
+We found that the step counter works well, although there is a delay in counting steps. This is by design as to avoid overcounting steps as a result of other oscillatory motion.
+
+The SPI and IMU drivers were also written, taking about the expected amount of time as listed in Sprint Review #1. Unforunately, the OLED did not arrive until recently, so that was not able to be tested yet. However, the driver for that is in progress. Since it also uses SPI, we expect setup to be easier along with our past lab experience in writing a portion of a screen driver.
+
+Here is the step counter:
+![1775964295827](image/README/1775964295827.jpg)
+
+This image shows some of our commits since the last sprint review.
+![1775963073351](image/README/1775963073351.png)
+
+Unfortunately, we reailzed that the existing parts list was inaccurate and we were unable to find certain parts, forcing us to place some orders later than we wanted to. For one, we wanted to use a 9-DOF IMU so that we could also take advantage of the magnetometer to create a compass. However, Detkin does not stock any dedicated magnetometers and their supply of IMUs is inaccurate to their parts list, only having the LSM6DS0 and some other IMUs which did not have features which we required. This led us to order the Adafruit LSM9DS1, which is effectively the same IMU (saves us time writing the driver) with a magnetometer.
+
+The initial lens choice also proved more difficult to work with than initially thought. Due to the short focal length of the lens (32mm), we found it difficult to place all of our components within that space. However, we found a workaround where we were able to place the lens closer to mitigate this issue.
 
 ### Next week's plan
 
