@@ -191,6 +191,7 @@ In case anyone is not available to work on something, everyone is reading the ST
 As of now, the main SPI driver is written and the IMU driver is in progress. Using the textbook as a reference, we're trying to write the driver for the LSM6DS0 so that it can use SPI properly. The mechanical design is nearly done (insert screenshot). We are also able to register basic GPIO input and some input capture using buttons so far on the STM32.
 
 ## Sprint Review #2
+### Last week's hardware progress
 This week, we targeted integrating various sensors and drivers, making sure that our devices are taking and outputting the proper data. Additionally, we hoped to get some of the new parts (OLED, lenses, Adafruit Blackpill STM32) so that we could move to our intended hardware setup. While the lenses and Blackpill STM32 have not arrived, the OLED has arrived.
 
 After analyzing the hardware components' sizes and the constrains on the optical components, new designs analyzed. The final design for prototyping will resemble design one, but with the hardware shifted to account for proper lens spacing. Later, prototypes will look like design three if space is too constrained.
@@ -202,7 +203,7 @@ To attempt to reduce the total thickness of the mounts, the furthest distance be
 
 Once the hardware arrived, components were measured with calipers to verify their measurements. A pair or glasses was also measured as a reference. Then, a canvas scaled to the glasses' size was imported into Fusion 360, where components were resized and the mount was scaled. Printing is underway to enable testing of the optics once the mirrors and lens arrives.![1775961470511](image/README/1775961470511.png)
 
-### Last week's progress
+### Last week's electrical progress
 Last week, we made some important progress on the integration of sensors and development of the blueprint of the device. Using the basic plan we had devised last week to primarily work on device drivers, communication protocols, and developing the optical system, we have reached a position where we are satisfied with current progress and are on track to create a MVP.
 
 The table below reiterates some of our barebones MVP guidelines:
@@ -227,16 +228,34 @@ We found that the step counter works well, although there is a delay in counting
 The SPI and IMU drivers were also written, taking about the expected amount of time as listed in Sprint Review #1. Unforunately, the OLED did not arrive until recently, so that was not able to be tested yet. However, the driver for that is in progress. Since it also uses SPI, we expect setup to be easier along with our past lab experience in writing a portion of a screen driver.
 
 Here is the step counter:
-![1775964295827](image/README/1775964295827.jpg)
+
+<img src="image/README/1775964295827.jpg" width="500">
 
 This image shows some of our commits since the last sprint review.
-![1775963073351](image/README/1775963073351.png)
+
+<img src="image/README/1775963073351.png" width="500">
 
 Unfortunately, we reailzed that the existing parts list was inaccurate and we were unable to find certain parts, forcing us to place some orders later than we wanted to. For one, we wanted to use a 9-DOF IMU so that we could also take advantage of the magnetometer to create a compass. However, Detkin does not stock any dedicated magnetometers and their supply of IMUs is inaccurate to their parts list, only having the LSM6DS0 and some other IMUs which did not have features which we required. This led us to order the Adafruit LSM9DS1, which is effectively the same IMU (saves us time writing the driver) with a magnetometer.
 
 The initial lens choice also proved more difficult to work with than initially thought. Due to the short focal length of the lens (32mm), we found it difficult to place all of our components within that space. However, we found a workaround where we were able to place the lens closer to mitigate this issue.
 
+The battery has also arrived and we are considering using power management to properly adjust the 3.0 - 4.2V LiPo to the proper operating voltages so that we can use it for the entirety of its battery voltage range.
+
 ### Next week's plan
+The table below illustrates our plans for the following week. To summarize, we hope to test functionality of the OLED, develop a functional CAD and 3d-printed MVP of the device, and develop the UI and user optical system.
+
+| Goal                                                                                                        | Owner  | Est. Time |
+|-------------------------------------------------------------------------------------------------------------|--------|-----------|
+| Develop OLED drivers, write screen functions                                                                | Seth   | 4-6 Hrs   |
+| Implement components of UI and improve upon IMU functionality by adding compass and optimizing step counter | Jerry  | 3-4 Hrs   |
+| Finish CAD and optical system design                                                                        | Thomas | 3-4 Hrs   |
+| Update SPI drivers to account for OLED                                                                      | Jerry  | 1 Hr      |
+| Write software to handle display switching and update main loop                                             | Seth   | 2-3 Hrs   |
+| 3D print CAD designs and build first MVP (if parts all arrive)                                              | Thomas | 2-3 Hrs   |
+
+In general, the goal is to prepare for the MVP demo and to develop a usable hardware system that is modular and lightweight. The OLED drivers will be written and some basic functionality involving GPIO and switching screens should also be implemented as well.
+
+We are well on track and keeping each other up to date with progress.
 
 ## MVP Demo
 
