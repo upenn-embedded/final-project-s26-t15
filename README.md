@@ -187,10 +187,20 @@ Thomas: Mechanical design and prototyping
 In case anyone is not available to work on something, everyone is reading the STM32 textbook and is proficient in mechanical design so we can assist each other if extra work is needed.
 
 ## April 9th, 2026
+
 As of now, the main SPI driver is written and the IMU driver is in progress. Using the textbook as a reference, we're trying to write the driver for the LSM6DS0 so that it can use SPI properly. The mechanical design is nearly done (insert screenshot). We are also able to register basic GPIO input and some input capture using buttons so far on the STM32.
 
 ## Sprint Review #2
 This week, we targeted integrating various sensors and drivers, making sure that our devices are taking and outputting the proper data. Additionally, we hoped to get some of the new parts (OLED, lenses, Adafruit Blackpill STM32) so that we could move to our intended hardware setup. While the lenses and Blackpill STM32 have not arrived, the OLED has arrived.
+
+After analyzing the hardware components' sizes and the constrains on the optical components, new designs analyzed. The final design for prototyping will resemble design one, but with the hardware shifted to account for proper lens spacing. Later, prototypes will look like design three if space is too constrained.
+
+![1775961422875](image/README/1775961422875.png)
+
+To attempt to reduce the total thickness of the mounts, the furthest distance between the mirror and the OLED was minimized. Onshape was used to simulate raytracing by creating variables and minimizing the base length through different configurations.
+![1775961446992](image/README/1775961446992.png)
+
+Once the hardware arrived, components were measured with calipers to verify their measurements. A pair or glasses was also measured as a reference. Then, a canvas scaled to the glasses' size was imported into Fusion 360, where components were resized and the mount was scaled. Printing is underway to enable testing of the optics once the mirrors and lens arrives.![1775961470511](image/README/1775961470511.png)
 
 ### Last week's progress
 Last week, we made some important progress on the integration of sensors and development of the blueprint of the device. Using the basic plan we had devised last week to primarily work on device drivers, communication protocols, and developing the optical system, we have reached a position where we are satisfied with current progress and are on track to create a MVP.
