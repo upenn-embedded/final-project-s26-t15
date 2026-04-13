@@ -10,8 +10,6 @@
 #include "spi.h"
 #include <stdint.h>
 
-// Enable clock access to GPIOA pins
-
 /******************************************************************************
 * Local Functions
 ******************************************************************************/
@@ -86,7 +84,7 @@ void spi1_init(void)                                // Initialize SPI comms
 void spi4_init(void) {
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;   // Enable GPIOA (i.e PORT A) clock
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;   // Enable GPIOB (i.e PORT B) clock
-    RCC->APB2ENR |= (1U << 13);             // Enable SPI4 module clock access
+    RCC->APB2ENR |= RCC_APB2ENR_SPI4EN;	// Enable SPI4 module clock access
 
     // PA1 - MOSI (AF5)
     GPIOA->MODER &= ~(1U << 2);             // Set PA1 alternate function mode.
@@ -177,7 +175,7 @@ void spi4_write(uint8_t *data, uint32_t size) {
 * @brief        Mostly for configuring settings
 * @note
 *****************************************************************************/
-uint8_t spi1_read(uint8_t *data, uint32_t size)
+void spi1_read(uint8_t *data, uint32_t size)
 {
     while (size > 0)
     {
@@ -188,7 +186,7 @@ uint8_t spi1_read(uint8_t *data, uint32_t size)
         data++;
         size--;
     }
-    return data;
+    return;
 }
 
 void cs1_enable(void)

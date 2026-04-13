@@ -9,7 +9,7 @@
 // Quick description:
 // SSD1306 128x64 OLED driver
 // SPI4 pins: PA1 (MOSI), PB13 (SCK), PB12 (CS)
-// GPIO pins: PB0 (D/C#), PB1 (RES#)
+// GPIO pins: PB0 (D/C)
 
 #include "oled.h"
 #include "spi.h"
@@ -18,12 +18,12 @@
 // we can't read back from the OLED so we keep a copy in RAM
 static uint8_t framebuffer[8][128];
 
-/******************************************************************************
-* Static helpers
-******************************************************************************/
+
+// static functions
 
 static void oled_send_cmd(uint8_t cmd) {
     GPIOB->ODR &= ~(1U << 0);    // D/C# LOW = command
+    for (volatile int i = 0; i < 10; i++); // small delay setup
     cs2_enable();
     spi4_write(&cmd, 1);
     cs2_disable();
@@ -31,6 +31,7 @@ static void oled_send_cmd(uint8_t cmd) {
 
 static void oled_send_data(uint8_t data) {
     GPIOB->ODR |=  (1U << 0);    // D/C# HIGH = data
+    for (volatile int i = 0; i < 10; i++);
     cs2_enable();
     spi4_write(&data, 1);
     cs2_disable();
@@ -43,29 +44,15 @@ static void oled_set_cursor(uint8_t page, uint8_t col) {
     oled_send_cmd(0x10 | (col >> 4));     // upper nibble of column
 }
 
-/******************************************************************************
-* Global Functions
-******************************************************************************/
-
 void oled_init(void) {
-    // enable GPIOB clock (PB0 D/C#, PB1 RES#) — PB12/PB13 already done in spi4_init
+    // enable GPIOB clock - probably not needed bc it's redundant with spi.c
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
 
     // PB0 = D/C#, output
     GPIOB->MODER |=  (1U << 0);
     GPIOB->MODER &= ~(1U << 1);
 
-    // PB1 = RES#, output
-    GPIOB->MODER |=  (1U << 2);
-    GPIOB->MODER &= ~(1U << 3);
-
-    // hardware reset — pulse RES# low briefly then release
-    GPIOB->ODR &= ~(1U << 1);
-    for (volatile int i = 0; i < 100000; i++);
-    GPIOB->ODR |=  (1U << 1);
-    for (volatile int i = 0; i < 100000; i++);
-
-    // init command sequence (charge pump variant — used by most modules)
+    // init command sequence (charge pump variant per the module datasheet)
     oled_send_cmd(0xAE);        // display off
 
     oled_send_cmd(0xD5);        // set display clock divide ratio
