@@ -38,6 +38,7 @@ void imu_write(uint8_t reg_addr, uint8_t data); // write a byte to a register ad
 uint8_t imu_read(uint8_t reg_addr); // read a byte from a register address on the IMU
 void imu_read_multiple(uint8_t reg_addr, uint8_t *buffer, uint32_t size); // read several bytes from address
 void imu_readxyz(uint8_t reg_addr, uint8_t *buffer); // read 6 bytes of data for x, y, z axis readings
+void imu_clearsteps(void);		// clear step counter
 
 
 #endif

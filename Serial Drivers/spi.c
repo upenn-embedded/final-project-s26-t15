@@ -118,7 +118,7 @@ void spi1_write(uint8_t *data, uint32_t size)
 * @brief        Mostly for configuring settings
 * @note
 *****************************************************************************/
-uint8_t spi1_read(uint8_t *data, uint32_t size)
+void spi1_read(uint8_t *data, uint32_t size)
 {
     while (size > 0)
     {
@@ -129,7 +129,7 @@ uint8_t spi1_read(uint8_t *data, uint32_t size)
         data++;
         size--;
     }
-    return data;
+    //return data;
 }
 
 void cs1_enable(void)
