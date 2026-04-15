@@ -2,7 +2,7 @@
  * imu.c
  *  Created on: 04/03/2026
  *  Author: Jerry Zhang
- *  Description: SPI driver for LCD display
+ *  Description: imu driver
  *
  */
 
