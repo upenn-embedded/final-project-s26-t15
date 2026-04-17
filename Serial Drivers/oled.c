@@ -37,6 +37,11 @@ static void oled_send_data(uint8_t data) {
     cs2_disable();
 }
 
+void oled_brightness(uint8_t brightness) {
+	oled_send_cmd(0x81);
+	oled_send_cmd(brightness);
+}
+
 // set write cursor to a specific page and column using page addressing mode
 static void oled_set_cursor(uint8_t page, uint8_t col) {
     oled_send_cmd(0xB0 | page);           // set page (0–7)

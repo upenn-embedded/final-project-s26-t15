@@ -186,11 +186,7 @@ void spi1_read(uint8_t *data, uint32_t size)
         data++;
         size--;
     }
-<<<<<<< HEAD
     //return data;
-=======
-    return;
->>>>>>> 78c72571895ee62d5bef76dd69baa02b36eea95e
 }
 
 void cs1_enable(void)
