@@ -191,7 +191,9 @@ In case anyone is not available to work on something, everyone is reading the ST
 As of now, the main SPI driver is written and the IMU driver is in progress. Using the textbook as a reference, we're trying to write the driver for the LSM6DS0 so that it can use SPI properly. The mechanical design is nearly done (insert screenshot). We are also able to register basic GPIO input and some input capture using buttons so far on the STM32.
 
 ## Sprint Review #2
+
 ### Last week's hardware progress
+
 This week, we targeted integrating various sensors and drivers, making sure that our devices are taking and outputting the proper data. Additionally, we hoped to get some of the new parts (OLED, lenses, Adafruit Blackpill STM32) so that we could move to our intended hardware setup. While the lenses and Blackpill STM32 have not arrived, the OLED has arrived.
 
 After analyzing the hardware components' sizes and the constrains on the optical components, new designs analyzed. The final design for prototyping will resemble design one, but with the hardware shifted to account for proper lens spacing. Later, prototypes will look like design three if space is too constrained.
@@ -204,11 +206,13 @@ To attempt to reduce the total thickness of the mounts, the furthest distance be
 Once the hardware arrived, components were measured with calipers to verify their measurements. A pair or glasses was also measured as a reference. Then, a canvas scaled to the glasses' size was imported into Fusion 360, where components were resized and the mount was scaled. Printing is underway to enable testing of the optics once the mirrors and lens arrives.![1775961470511](image/README/1775961470511.png)
 
 ### Last week's electrical progress
+
 Last week, we made some important progress on the integration of sensors and development of the blueprint of the device. Using the basic plan we had devised last week to primarily work on device drivers, communication protocols, and developing the optical system, we have reached a position where we are satisfied with current progress and are on track to create a MVP.
 
 The table below reiterates some of our barebones MVP guidelines:
+
 | MVP Goal                               | Description                                                                                                                                                                                                           | Status                                                                                                                                                                                    |
-|----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | #1. IMU Step Counter                   | The smartglasses will contain basic motion tracking capabilities, using an IMU to track the wearer's steps.                                                                                                           | Complete. The SPI and IMU drivers have been fully written for the LSM6DS0, but there are other issues (written below).                                                                    |
 | #2. On-Screen Timer System             | A wearer will be able to set and be notified of timers for use such as in timing activities like cooking or taking a practice exam.                                                                                   | Incomplete. The timer system will be created through the use of hardware timers, the software has not been written yet.                                                                   |
 | #3. 2-4 Buttons for Screen Control     | The smartglasses will have several buttons to interface with the GUI to interact with features such as the step counter, timer system, or compass.                                                                    | Incomplete. Basic GPIO features have been tested, but software must be written. This will be complete after all other subsystems are operable.                                            |
@@ -217,6 +221,7 @@ The table below reiterates some of our barebones MVP guidelines:
 | #6. Navigation System                  | The smartglasses will contain a basic navigation system consisting of a cardinal compass to allow the user to receive navigation data. This may extend outwards into the usage of GPS or other features.              | The initial IMU used (LSM6DS0) does not contain the magnetometer required for the compass. A version with the magnetometer has been ordered.                                              |
 
 ### Current state of project
+
 To summarize, we have written drivers and tested functionality for the IMU step counter subsystem. The video below shows (poorly) the operation of the step counter:
 
 https://drive.google.com/file/d/1mDCpxerKAkAiZ3uGaSlx3KKA8HsJcfL3/view?usp=sharing
@@ -242,10 +247,11 @@ The initial lens choice also proved more difficult to work with than initially t
 The battery has also arrived and we are considering using power management to properly adjust the 3.0 - 4.2V LiPo to the proper operating voltages so that we can use it for the entirety of its battery voltage range.
 
 ### Next week's plan
+
 The table below illustrates our plans for the following week. To summarize, we hope to test functionality of the OLED, develop a functional CAD and 3d-printed MVP of the device, and develop the UI and user optical system.
 
 | Goal                                                                                                        | Owner  | Est. Time |
-|-------------------------------------------------------------------------------------------------------------|--------|-----------|
+| ----------------------------------------------------------------------------------------------------------- | ------ | --------- |
 | Develop OLED drivers, write screen functions                                                                | Seth   | 4-6 Hrs   |
 | Implement components of UI and improve upon IMU functionality by adding compass and optimizing step counter | Jerry  | 3-4 Hrs   |
 | Finish CAD and optical system design                                                                        | Thomas | 3-4 Hrs   |
@@ -258,6 +264,84 @@ In general, the goal is to prepare for the MVP demo and to develop a usable hard
 We are well on track and keeping each other up to date with progress.
 
 ## MVP Demo
+
+**Refined System Diagram:**
+
+![1776481041381](image/README/1776481041381.png)
+
+**Firmware Impementation:**
+
+The main firmware is in the main.c file, which calls functions from every other .c file, including the oled.c, spi.c, imu.c, files. The main.c file is where the state of the screen is handled and where all the initialize functions are called. Then, in oled.c, spi.c, and imu.c (which are our drivers), we have the actual function code that instantiates SPI, which is used for both the OLED screen and IMU.
+
+More specifically:
+
+In spi.c: we have two independent SPI buses that run. One SPI bus is for the OLED screen and the other one is for the IMU.
+
+In imu.c: we have functions that read the register from the IMU that stores the number of steps taken. This file also handles interrupts that come from the IMU, which refresh the OLED screen to display the updated step count.
+
+In oled.c: This is the main driver for our SSD1308 oled screen. This has functions for OLED brightness, resetting the OLED screen, and drawing pixels on the OLED screen.
+
+In font.c: This file has various draw functions that use the draw_pixel function from oled.c.
+
+Below is an Image of the working OLED. The text on the OLED will eventually be cast to the front of the lens on the AR glasses.
+
+![1776478366829](image/README/1776478366829.png)
+
+**Software Impementation:**
+
+We have achieved some of our Software Requirements. Specifically, we have satisfied SRS-01, which is to read the IMU accelerometer data for accurate step detection. Originally, we wanted to have this refresh at 50 Hz. However, this was not possible due to the slow nature of the IMU register updating. However, this is not a big deal since we’re still accurately getting step count.
+
+We also have satisfied SRS-02 (accurate step-count).
+
+We decided to not use the ESP-32 due to extra unnecessary complexity. Therefore, SRS-03 and SRS-04 and SRS-06 are no longer relevant.
+
+SRS-05 is partially completed since we have the basic functionality of cycling between various screens. However, we do not have the magnetometer setup yet (SRS-07), so we are still working on that.
+
+For SRS-08, the OLED works through SPI. However, we decided not to use the ESP32 so the ESP32 part of the requirement is irrelevant. The OLED is fully functional, however.
+
+Below is a picture of the IMU setup.
+
+![1776480969079](image/README/1776480969079.png)
+
+**Hardware Implementation:**
+
+For HRS-01: we are partially done with this hardware requirement except we currently are using a 6-axis accelerometer because the 9-axis accelerometer we bought requires using I2C, which we do not have setup yet.
+
+For HRS-02: we have satisfied this since our OLED fits on the glasses frame extension and also can display more than 2 lines of text.
+
+For HRS-03: several push buttons register within 100ms and do various functions, such as changing what is on the OLED display.
+
+For HRS-04/HRS-05: Not relevant because we aren’t using ESP32.
+
+For HRS-06: We have not tested battery life yet. However, eliminating the use of the ESP32 saves a lot of power since the OLED and STM32 alone are relatively power efficient and not too power hungry.
+
+**Other Project Elements:**
+
+The lens drives many dimensions of the container that encloses the components. Because it has not arrived yet, we decided to create a simple, flexible chasis using thin, single layer cardboard. Based off of the measurements validated with a caliper, and the latest design, a cardboard cutout was made.
+
+![1776478420983](image/README/1776478420983.png)
+
+The components were then housed inside the cardboard cutout, proving that they could be connected and fit into these dimensions. The buttons were also placed and connected internally. 
+
+![1776478376650](image/README/1776478376650.png)
+
+To enable connection to a pair of glasses, slots were added onto the side of the enclosure. During testing, it was found that the orientation of teh enclosure deviated form expected due to the weight of the hardware. A solution was developed for the CAD where the frame of the glasses would be built into the enclosure rather than using a detachable design.
+
+![1776478385772](image/README/1776478385772.png)
+
+The CAD was also updated with the new dimensions of the mirror.
+
+![1776478407053](image/README/1776478407053.png)
+
+**Risks:**
+
+Due to the lens not arriving yet, the optical design could not be validated. To ensure no major design changes were needed, we conducted an analysis of the design from an optical standpoint, verifying that the virtual image could be created with our latest dimensions and components.
+
+![1776478445147](image/README/1776478445147.png)
+
+We also verified by analyzing the rays in an optics simulation, verifiying that our new lens and beamsplitter would create the expected image.
+
+![1776478674170](image/README/1776478674170.png)
 
 ## Final Report
 
