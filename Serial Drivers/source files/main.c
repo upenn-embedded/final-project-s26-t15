@@ -7,6 +7,8 @@
 #include "font.h"
 #include "extra_functions.h"
 #include "adc.h"
+#include "timing.h"
+#include "rtc.h"
 
 #define GPIOAEN     (1U << 0)
 #define UART2EN     (1U << 17)
@@ -49,14 +51,6 @@ int __io_putchar(int ch) {
 }
 
 
-/* FIRMWARE TODO:
- * Use SysTick to periodically update step count, screen. etc. currently IMU is not auto updating
- *
- * Implement timer counting up.
- */
-
-
-
 // Screen state — volatile because ISR modifies it
 volatile uint8_t current_screen = 0; // state of screen
 volatile uint8_t screen_changed = 1;  // start with 1 to draw initial screen
@@ -69,9 +63,19 @@ volatile uint8_t screen_changed = 1;  // start with 1 to draw initial screen
 
 //PB1
 void EXTI1_IRQHandler(void) {
-    EXTI->PR = (1U << 1); // write 1 to clear flag otherwise NVIC will keep re-entering interrupt handler
-    current_screen = (current_screen + 1) % NUM_SCREENS;
-    screen_changed = 1;
+
+	static uint32_t last_press = 0; // lives in .data for lifetime of program
+
+	if ((get_tick() - last_press) > 300) { // prevent debouncing
+		if (!(GPIOB->IDR & (1U << 1))) {
+			last_press = get_tick();
+			current_screen = (current_screen + 1) % NUM_SCREENS;
+			screen_changed = 1;
+		}
+	}
+
+	EXTI->PR = (1U << 1); // write 1 to clear flag otherwise NVIC will keep re-entering interrupt handler
+
 }
 
 
@@ -95,19 +99,50 @@ void EXTI4_IRQHandler(void) {
     EXTI->PR = (1U << 4);
 }
 
+// Timer 2 interrupt every 100ms
+static int second_calibration = 0;
+void TIM2_IRQHandler(void) {
+
+    if (TIM2->SR & (1 << 0)) { // check if flag is set
+        TIM2->SR &= ~(1 << 0); // clear flag
+
+        //BRIGHTNESS UPDATE
+        oled_brightness(adc_read());
+
+        // TIME UPDATE
+        second_calibration += 1;
+        if (second_calibration == 9){
+        	second_calibration = 0;
+        	if (current_screen == 1){
+				screen_changed = 1;
+			}
+        }
+    }
+}
+
+// calibrate time from compilation time
+static void set_time_from_compile(void) {
+    // __TIME__ is a string literal: "HH:MM:SS"
+    uint8_t h = (__TIME__[0] - '0') * 10 + (__TIME__[1] - '0');
+    uint8_t m = (__TIME__[3] - '0') * 10 + (__TIME__[4] - '0');
+    uint8_t s = (__TIME__[6] - '0') * 10 + (__TIME__[7] - '0');
+    rtc_set_time(h, m, s);
+}
+
 int main(void)
 {
-    // Important: Many projects require a delay or system clock init
-    // before peripherals. If it hangs, check your clock settings.
-
-    spi1_init(); // Initialize SPI1 for IMU communication
-    uart_init();
-    setup_GPIO();
-    spi4_init();
-    oled_init();
-    exti_init();
-    adc_init();
-    imu_enable_step_interrupt();
+	delay_init(); // start counting ticks
+    spi1_init(); // SPI1 for IMU communication
+    uart_init(); // UART for printing to terminal
+    setup_GPIO(); // GPIO setup
+    spi4_init(); // SPI4 for OLED
+    oled_init(); // OLED
+    exti_init(); // Initialize IMU interrupt on STM
+    adc_init(); // ADC
+    imu_enable_step_interrupt(); // IMU interrupt enable
+    TIM2_init(); // timer2 for interrupts
+    rtc_init(); // RTC for the time
+    set_time_from_compile();
 
     if (imu_init() == 0) {
         // If IMU fails, print error and halt
@@ -127,40 +162,63 @@ int main(void)
     char buf[6];
 
     while (1) {
+
+    	// auto-update screen when step count updates
     	if (step_flag) {
-    		printf("Steps: %d\r\n", step_count);
     		step_flag = 0;
 
-    		if (current_screen == 1) {
+    		if (current_screen == 2) {
     			screen_changed = 1;
     		}
     	}
 
-    	// change adc value and brightness
-    	if (current_screen == 2) {
-    		screen_changed = 1;
-    	}
-
+    	// Main screen handler
     	if (screen_changed) {
     		screen_changed = 0;
     		oled_clear();
 
+
     		switch (current_screen) {
+    		// MAIN SCREEN
     			case 0:
     				draw_string(0, 0, "Hello.");
     				draw_string(0, 10, "This is Argus.");
     				break;
+    		// TIME
     			case 1:
+    				uint8_t h, m, s;
+					rtc_get_time(&h, &m, &s);
+
+					const char *period = (h >= 12) ? "PM" : "AM";
+					uint8_t h12 = h % 12;
+					if (h12 == 0) h12 = 12;
+
+					char time_buf[9];
+					time_buf[0] = '0' + h12 / 10;
+					time_buf[1] = '0' + h12 % 10;
+					time_buf[2] = ':';
+					time_buf[3] = '0' + m / 10;
+					time_buf[4] = '0' + m % 10;
+					time_buf[5] = ':';
+					time_buf[6] = '0' + s / 10;
+					time_buf[7] = '0' + s % 10;
+					time_buf[8] = '\0';
+
+					draw_string(0, 0, "TIME");
+					draw_string(0, 10, time_buf);
+					draw_string(0, 20, period);
+					break;
+			// STEPS
+    			case 2:
     				draw_string(0, 0, "STEPS");
     				uint_to_str(read_steps(), buf);
     				draw_string(0, 10, buf);
     				break;
-    			case 2:
-    				draw_string(0, 0, "ADC");
-    				uint_to_str(adc_read(), buf);
-    				draw_string(0 , 10, buf);
-    				oled_brightness(1);
-    				break;
+
+
+
+
+
     		}
     	}
     }

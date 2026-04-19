@@ -3,7 +3,7 @@
  *
  * Created: 4/9/2026 1:03:45 PM
  *  Author: Jerry Zhang
- */ 
+ */
 
 #include "stm32f4xx.h" // Defines aliases
 #include "adc.h"

@@ -1,12 +1,12 @@
 /*
- * font.h
+ * adc.h
  *  Created on: 04/12/2026
  *  Author: Seth Lee
  *
  */
 
 #ifndef ADC_H
-#define ACD_H
+#define ADC_H
 
 #include <stdint.h>
 
