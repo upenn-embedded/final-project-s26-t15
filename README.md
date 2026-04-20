@@ -321,7 +321,7 @@ The lens drives many dimensions of the container that encloses the components. B
 
 ![1776478420983](image/README/1776478420983.png)
 
-The components were then housed inside the cardboard cutout, proving that they could be connected and fit into these dimensions. The buttons were also placed and connected internally. 
+The components were then housed inside the cardboard cutout, proving that they could be connected and fit into these dimensions. The buttons were also placed and connected internally.
 
 ![1776478376650](image/README/1776478376650.png)
 
@@ -342,6 +342,20 @@ Due to the lens not arriving yet, the optical design could not be validated. To 
 We also verified by analyzing the rays in an optics simulation, verifiying that our new lens and beamsplitter would create the expected image.
 
 ![1776478674170](image/README/1776478674170.png)
+
+## Final Updates
+
+A new lens was ordered due to supply chain delays with the original lens. The new lens is a 25mm diameter lens with a focal point of 71mm. Initially, the object distance remained the same as before, creating a new image distance and magnification. However, a new constraint was discovered: the human eye focuses best at distances greater than 25cm. Thus, the object (the OLED) must be moved so that the virtual image is at an absolute distance of greater than 250mm. Using the equations for a virtual image, a new object distance of 56mm was chosen. Thus, the encolosure had to be redesigned to account for this.
+
+![1776715744627](image/README/1776715744627.png)
+
+While adjusting the CAD, it became apparent that the placement and orientation of the mirrors affected the object distance, or the distance traveled by the light before reaching the lens. To account for light emmited from all edges of the lens, the mirrors must be placed parallel to each other so that the horiontal distance remains constant.
+
+![1776715873380](image/README/1776715873380.png)
+
+Finally, the enclosure could be printed.
+
+![1776715911116](image/README/1776715911116.png)
 
 ## Final Report
 
