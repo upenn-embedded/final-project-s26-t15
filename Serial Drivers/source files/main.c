@@ -74,7 +74,7 @@ void EXTI1_IRQHandler(void) {
 		}
 	}
 
-	EXTI->PR = (1U << 1); // write 1 to clear flag otherwise NVIC will keep re-entering interrupt handler
+	EXTI->PR = (1U << 1); // write 1 to clear flag otherwise NVIC will keep reentering interrupt handler
 
 }
 
@@ -99,6 +99,8 @@ void EXTI4_IRQHandler(void) {
     EXTI->PR = (1U << 4);
 }
 
+volatile uint16_t speed = 0;
+
 // Timer 2 interrupt every 100ms
 static int second_calibration = 0;
 void TIM2_IRQHandler(void) {
@@ -109,11 +111,16 @@ void TIM2_IRQHandler(void) {
         //BRIGHTNESS UPDATE
         oled_brightness(adc_read());
 
-        // TIME UPDATE
+        // TIME UPDATE (and also checking speed every second)
         second_calibration += 1;
         if (second_calibration == 9){
         	second_calibration = 0;
         	if (current_screen == 1){
+				screen_changed = 1;
+			}
+
+			if (current_screen == 2){
+				speed = calculate_speed_from_steps();
 				screen_changed = 1;
 			}
         }
@@ -148,7 +155,6 @@ int main(void)
         // If IMU fails, print error and halt
     	printf("Step 2: Initializing IMU...\r\n");
 
-    	    // Let's see what the IMU is actually sending back
     	    uint8_t id = imu_read(IMU_WHO_AM_I);
 
     	    if (id != IMU_ID) {
@@ -181,8 +187,8 @@ int main(void)
     		switch (current_screen) {
     		// MAIN SCREEN
     			case 0:
-    				draw_string(50, 0, "Hello.");
-    				draw_string(50, 10, "This is Argus.");
+    				draw_string(0, 0, "Hello.");
+    				draw_string(0, 10, "This is Argus.");
     				break;
     		// TIME
     			case 1:
@@ -213,10 +219,10 @@ int main(void)
     				draw_string(0, 0, "STEPS");
     				uint_to_str(read_steps(), buf);
     				draw_string(0, 10, buf);
-    				break;
-
-
-
+					draw_string(30, 30, "MPH:");
+					uint_to_str(speed, buf);
+					draw_string(30, 48, buf);
+					break;
 
 
     		}
