@@ -181,8 +181,8 @@ int main(void)
     		switch (current_screen) {
     		// MAIN SCREEN
     			case 0:
-    				draw_string(0, 0, "Hello.");
-    				draw_string(0, 10, "This is Argus.");
+    				draw_string(50, 0, "Hello.");
+    				draw_string(50, 10, "This is Argus.");
     				break;
     		// TIME
     			case 1:
