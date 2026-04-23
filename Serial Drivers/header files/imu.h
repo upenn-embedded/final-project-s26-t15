@@ -3,7 +3,7 @@
  *
  * Created: 4/9/2026 1:03:45 PM
  *  Author: Jerry Zhang
- */
+ */ 
 
 #include "stm32f4xx.h" // Defines aliases
 #include <stdint.h>
@@ -12,7 +12,7 @@
 #ifndef IMU_H_ // the LSM6DS0 on SPI mode
 #define IMU_H_
 
-extern volatile uint16_t step_count;
+extern volatile uint32_t step_count;
 extern volatile uint8_t step_flag;
 
 #define IMU_WHO_AM_I 0x0F           // WHO_AM_I register address, should always return 0x6C
@@ -39,7 +39,7 @@ extern volatile uint8_t step_flag;
 #define EMB_FUNC_INT1   0x0A
 
 uint8_t imu_init(void);             // initialize all imu settings, verify device id
-uint16_t read_steps(void);          // read the step counter value
+uint32_t read_steps(void);          // read the step counter value
 //uint8_t imu_write;
 void imu_write(uint8_t reg_addr, uint8_t data); // write a byte to a register address on the IMU
 uint8_t imu_read(uint8_t reg_addr); // read a byte from a register address on the IMU
@@ -48,6 +48,7 @@ void imu_readxyz(uint8_t reg_addr, uint8_t *buffer); // read 6 bytes of data for
 void imu_clearsteps(void);		// clear step counter
 void imu_enable_step_interrupt(void); // initialize thee interrupt 1
 void exti_init(void); // initialize the interrupt 2
+uint16_t calculate_speed_from_steps(void);
 
 
 #endif

@@ -8,6 +8,7 @@
 
 
 #include "imu.h"
+#include "timing.h"
 
 /**************************************************************************//**
 * @fn			uint8_t imu_init(void)
@@ -80,7 +81,7 @@ void imu_readxyz(uint8_t reg_addr, uint8_t *buffer) {
 * @brief		Read the high and low bits of step counter array, combine them, then return step count
 * @note
 *****************************************************************************/
-uint16_t read_steps(void) {
+uint32_t read_steps(void) {
 
     for(volatile int i = 0; i < 2000; i++);
     imu_write(EMB_FUNC_CFG_ACCESS, FUNC_CFG_ACCESS); // enable access to embedded functions
@@ -127,7 +128,7 @@ void exti_init(void) {
     NVIC_EnableIRQ(EXTI9_5_IRQn);   // 7. Enable the shared 5-9 NVIC line
 }
 
-volatile uint16_t step_count = 0;
+volatile uint32_t step_count = 0;
 volatile uint8_t step_flag = 0;
 
 /**************************************************************************//**
@@ -150,5 +151,26 @@ void EXTI9_5_IRQHandler(void) {
         step_count++;
         step_flag = 1;
     }
+}
+
+
+static uint32_t last_total_steps = 0;
+uint16_t calculate_speed_from_steps(void) {
+    // calculate the speed based on the number of steps taken in a certain time frame
+    // use that average human walk speed = 2.5ft per step, run is 4.5ft per step
+    uint32_t current_total_steps = read_steps();
+
+    // steps in last second
+    uint16_t delta_steps = (uint16_t)(current_total_steps - last_total_steps);
+    last_total_steps = current_total_steps;
+
+    float stride_length = (delta_steps > 2) ? 4.5f : 2.5f;
+
+    // 3. Calculate Speed (Feet per Second)
+    // Since time window is 1 second, Speed = delta_steps * stride
+    float speed_fps = (float)delta_steps * stride_length;
+    float speed_mph = (speed_fps * 3600) / 5280;
+
+    return (uint16_t)speed_fps;
 }
 
