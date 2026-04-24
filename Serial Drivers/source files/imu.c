@@ -9,6 +9,9 @@
 
 #include "imu.h"
 #include "timing.h"
+#include "extra_functions.h"
+#include <string.h>
+#include <stdio.h>
 
 /**************************************************************************//**
 * @fn			uint8_t imu_init(void)
@@ -155,7 +158,7 @@ void EXTI9_5_IRQHandler(void) {
 
 
 static uint32_t last_total_steps = 0;
-uint16_t calculate_speed_from_steps(void) {
+void calculate_speed_from_steps(char *buffer, int size) {
     // calculate the speed based on the number of steps taken in a certain time frame
     // use that average human walk speed = 2.5ft per step, run is 4.5ft per step
     uint32_t current_total_steps = read_steps();
@@ -171,6 +174,17 @@ uint16_t calculate_speed_from_steps(void) {
     float speed_fps = (float)delta_steps * stride_length;
     float speed_mph = (speed_fps * 3600) / 5280;
 
-    return (uint16_t)speed_fps;
+    uint16_t non_decimals = (uint16_t)speed_mph;
+    uint16_t decimals = ((uint16_t)(speed_mph * 10)) % 10;
+    snprintf(buffer, size, "%d.%d MPH", non_decimals, decimals);
 }
 
+void imu_reset_steps(void) {
+    uint8_t val = imu_read(IMU_CTRL10_C);
+    
+    imu_write(IMU_CTRL10_C, val | (1U << 6));
+
+    imu_write(IMU_CTRL10_C, val & ~(1U << 6));
+
+    step_count = 0;
+}
