@@ -22,4 +22,14 @@ void cs2_disable(void);
 void spi1_read(uint8_t *data, uint32_t size);    // Read bytes from SPI bus
 uint8_t spi1_transfer(uint8_t data);                   // Transfer a byte over SPI and receive the response
 
+
+
+void spi2_init(void);
+uint8_t spi2_transfer(uint8_t data);
+void cs3_enable(void);
+void cs3_disable(void);
+void spi2_read(uint8_t *data, uint32_t size);
+
+
+
 #endif

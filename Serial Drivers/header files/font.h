@@ -12,5 +12,6 @@
 
 void draw_char(uint8_t x, uint8_t y, char c);
 void draw_string(uint8_t x, uint8_t y, const char *str);
+void draw_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h);
 
 #endif

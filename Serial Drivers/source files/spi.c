@@ -217,3 +217,75 @@ uint8_t spi1_transfer(uint8_t data) {
     uint8_t status_burner = SPI1->SR;
     return received_data;
 }
+
+
+
+
+// hail mary on SPI2
+
+void spi2_init(void) {
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
+    RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;  // SPI2 is on APB1
+
+    // PB10 - SCK (AF5)
+    GPIOB->MODER &= ~(3U << 20);
+    GPIOB->MODER |=  (2U << 20);
+    GPIOB->AFR[1] &= ~(0xF << 8);
+    GPIOB->AFR[1] |=  (5U << 8);   // AF5
+
+    // PB14 - MISO (AF5)
+    GPIOB->MODER &= ~(3U << 28);
+    GPIOB->MODER |=  (2U << 28);
+    GPIOB->AFR[1] &= ~(0xF << 24);
+    GPIOB->AFR[1] |=  (5U << 24);  // AF5
+
+    // PB15 - MOSI (AF5)
+    GPIOB->MODER &= ~(3U << 30);
+    GPIOB->MODER |=  (2U << 30);
+    GPIOB->AFR[1] &= ~(0xF << 28);
+    GPIOB->AFR[1] |=  (5U << 28);  // AF5
+
+    // PB9 - CS (GPIO output)
+    GPIOB->MODER &= ~(3U << 18);
+    GPIOB->MODER |=  (1U << 18);
+    GPIOB->ODR   |=  (1U << 9);    // CS default HIGH
+
+    SPI2->CR1  = 0;
+    SPI2->CR1 |= (1U << 3);         // Prescaler /4
+    SPI2->CR1 &= ~(1U << 4);
+    SPI2->CR1 &= ~(1U << 5);
+    SPI2->CR1 |=  SPI_CR1_MSTR;
+    SPI2->CR1 &= ~SPI_CR1_CPOL;
+    SPI2->CR1 &= ~SPI_CR1_CPHA;
+    SPI2->CR1 &= ~SPI_CR1_LSBFIRST;
+    SPI2->CR1 &= ~SPI_CR1_RXONLY;
+    SPI2->CR1 &= ~SPI_CR1_DFF;
+    SPI2->CR1 |=  SPI_CR1_SSI;
+    SPI2->CR1 |=  SPI_CR1_SSM;
+    SPI2->CR1 |=  SPI_CR1_SPE;
+}
+
+uint8_t spi2_transfer(uint8_t data) {
+    while (!(SPI2->SR & SPI_SR_TXE));
+    SPI2->DR = data;
+    while (!(SPI2->SR & SPI_SR_RXNE));
+    uint8_t received = (uint8_t)SPI2->DR;
+    uint8_t dummy = SPI2->SR;
+    return received;
+}
+
+void spi2_read(uint8_t *data, uint32_t size)
+{
+    while (size > 0)
+    {
+        while (!(SPI2->SR & (SPI_SR_TXE))) {} // Wait for TXE flag, transmitter empty
+        SPI2->DR = 0x00; // Send dummy byte to generate clock
+        while (!(SPI2->SR & (SPI_SR_RXNE))) {} // Wait for RXNE flag, receiver full
+        *data = (uint8_t)(SPI2->DR); // Read received data
+        data++;
+        size--;
+    }
+}
+
+void cs3_enable(void)  { GPIOB->ODR &= ~(1U << 9); }
+void cs3_disable(void) { GPIOB->ODR |=  (1U << 9); }
