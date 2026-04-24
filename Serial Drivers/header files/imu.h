@@ -48,7 +48,7 @@ void imu_readxyz(uint8_t reg_addr, uint8_t *buffer); // read 6 bytes of data for
 void imu_clearsteps(void);		// clear step counter
 void imu_enable_step_interrupt(void); // initialize thee interrupt 1
 void exti_init(void); // initialize the interrupt 2
-uint16_t calculate_speed_from_steps(void);
+void calculate_speed_from_steps(char* buffer, int size);
 
 
 #endif
