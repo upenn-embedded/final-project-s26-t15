@@ -357,6 +357,15 @@ Finally, the enclosure could be printed.
 
 ![1776715911116](image/README/1776715911116.png)
 
+Assembly of hardware components began:
+
+![1777042244777](image/README/1777042244777.jpg)
+
+Testing of the projection:
+![1777042292677](image/README/1777042292677.jpg)
+
+![1777042298013](image/README/1777042298013.jpg)
+
 ## Final Report
 
 Don't forget to make the GitHub pages public website!
