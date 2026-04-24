@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Argus — AR Smart Glasses | ESE 3500 Team 15</title>
+  <style>
+    :root {
+      --bg: #080c14;
+      --surface: #0e1420;
+      --surface2: #141b2a;
+      --border: #1e2d45;
+      --accent: #00d4ff;
+      --accent2: #7c3aed;
+      --text: #e2e8f0;
+      --muted: #8899aa;
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.7;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(8,12,20,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+    .nav-brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+      margin-left: auto;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      padding-top: 56px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 20%, rgba(0,212,255,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(124,58,237,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 0.3rem 0.9rem;
+      border: 1px solid var(--accent);
+      border-radius: 999px;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      margin-bottom: 1.2rem;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 600px;
+      margin: 1rem auto 2rem;
+    }
+    .team-chips {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 3rem;
+    }
+    .chip {
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* STL VIEWER */
+    .stl-section {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .stl-viewer-wrapper {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    #stl-canvas {
+      width: 100%;
+      height: 420px;
+      display: block;
+    }
+    .stl-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      background: rgba(14,20,32,0.92);
+      transition: opacity 0.4s;
+      cursor: pointer;
+    }
+    .stl-overlay.hidden { opacity: 0; pointer-events: none; }
+    .upload-icon {
+      width: 56px; height: 56px;
+      border: 2px dashed var(--accent);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+    }
+    .stl-overlay p { color: var(--muted); font-size: 0.9rem; }
+    .stl-overlay strong { color: var(--accent); }
+    #stl-file-input { display: none; }
+    .stl-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .stl-hint { display: flex; gap: 1.5rem; }
+    .stl-hint span::before { margin-right: 0.3rem; }
+    .btn-upload {
+      padding: 0.35rem 0.9rem;
+      border-radius: 6px;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-upload:hover { background: var(--accent); color: #000; }
+
+    /* MAIN CONTENT */
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    section { margin-bottom: 5rem; }
+
+    h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    h2 .sec-num {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      font-weight: 600;
+      background: rgba(0,212,255,0.1);
+      border: 1px solid rgba(0,212,255,0.25);
+      border-radius: 6px;
+      padding: 0.15rem 0.5rem;
+    }
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 1.5rem 0 0.75rem;
+    }
+
+    p { color: var(--muted); margin-bottom: 1rem; }
+    p strong { color: var(--text); }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .card p { margin-bottom: 0; }
+
+    /* TABLES */
+    .table-wrap { overflow-x: auto; margin: 1.5rem 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    td:first-child { color: var(--accent); font-weight: 600; font-family: monospace; white-space: nowrap; }
+
+    /* STATUS BADGES */
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .badge-green { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-yellow { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.3); }
+    .badge-red { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+
+    /* IMAGES */
+    .img-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .img-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .img-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+    }
+    .img-card .img-caption {
+      padding: 0.6rem 0.9rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .img-single {
+      margin: 1.5rem 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .img-single img {
+      width: 100%;
+      max-height: 400px;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* SPRINT CARDS */
+    .sprint-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .sprint-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.2rem;
+    }
+    .sprint-card h4 {
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .sprint-card ul {
+      list-style: none;
+      padding: 0;
+      font-size: 0.83rem;
+      color: var(--muted);
+    }
+    .sprint-card ul li { margin-bottom: 0.3rem; padding-left: 1rem; position: relative; }
+    .sprint-card ul li::before { content: '›'; position: absolute; left: 0; color: var(--accent); }
+
+    /* BOM */
+    .bom-table td:nth-child(2) { color: var(--text); font-weight: 500; }
+
+    /* DIVIDER */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 3rem 0;
+    }
+
+    /* TIMELINE */
+    .timeline { position: relative; padding-left: 2rem; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0.45rem;
+      top: 0.5rem;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .tl-item { position: relative; margin-bottom: 2.5rem; }
+    .tl-dot {
+      position: absolute;
+      left: -1.65rem;
+      top: 0.35rem;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      box-shadow: 0 0 0 3px rgba(0,212,255,0.2);
+    }
+    .tl-date {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .tl-title { font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* SCROLL ARROW */
+    .scroll-down {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--muted);
+      font-size: 0.75rem;
+      animation: bob 2s ease-in-out infinite;
+    }
+    @keyframes bob {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(6px); }
+    }
+
+    @media (max-width: 640px) {
+      nav { padding: 0 1rem; gap: 1rem; }
+      .nav-links { gap: 0.8rem; }
+      main { padding: 2rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="#">ARGUS</a>
+  <ul class="nav-links">
+    <li><a href="#abstract">Overview</a></li>
+    <li><a href="#requirements">Requirements</a></li>
+    <li><a href="#bom">BOM</a></li>
+    <li><a href="#progress">Progress</a></li>
+    <li><a href="#final">Final</a></li>
+    <li><a href="https://github.com/upenn-embedded/final-project-s26-t15" target="_blank">GitHub</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-badge">ESE 3500 &nbsp;·&nbsp; Team 15 &nbsp;·&nbsp; Spring 2026</div>
+  <h1>Argus</h1>
+  <p class="hero-sub">
+    Augmented reality smart glasses with a transparent OLED HUD, 9-axis IMU, wireless data relay, and real-time activity tracking — always in your line of sight.
+  </p>
+  <div class="team-chips">
+    <span class="chip">Seth Lee &nbsp;·&nbsp; sethlee@seas.upenn.edu</span>
+    <span class="chip">Jerry Zhang &nbsp;·&nbsp; jerryjz@seas.upenn.edu</span>
+    <span class="chip">Thomas Liu &nbsp;·&nbsp; tholiu@seas.upenn.edu</span>
+  </div>
+
+  <!-- STL VIEWER -->
+  <div class="stl-section">
+    <div class="stl-viewer-wrapper">
+      <canvas id="stl-canvas"></canvas>
+      <div class="stl-overlay" id="stl-overlay">
+        <div class="upload-icon">⬆</div>
+        <div>
+          <strong>Upload a 3D model</strong>
+          <p>Drop an .stl file here or click to browse</p>
+        </div>
+      </div>
+      <input type="file" id="stl-file-input" accept=".stl" />
+    </div>
+    <div class="stl-controls">
+      <div class="stl-hint">
+        <span>🖱 Drag to rotate</span>
+        <span>🔍 Scroll to zoom</span>
+        <span>⇧ Right-drag to pan</span>
+      </div>
+      <button class="btn-upload" id="btn-upload-new">Upload STL</button>
+    </div>
+  </div>
+
+  <div class="scroll-down">
+    <span>scroll</span>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 10.94L2.53 5.47a.75.75 0 0 0-1.06 1.06l6 6a.75.75 0 0 0 1.06 0l6-6a.75.75 0 0 0-1.06-1.06L8 10.94z"/>
+    </svg>
+  </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<main>
+
+  <!-- ABSTRACT -->
+  <section id="abstract">
+    <h2><span class="sec-num">01</span> Abstract</h2>
+    <div class="card">
+      <p>
+        Argus is a pair of augmented reality glasses that utilizes a HUD and sensor suite to collect and display movement information along with live timers that always keep the user up to date with their activities. Using a STM32 MCU and XIAO ESP32S3 processors, we can wirelessly transmit data from the glasses to our pocket. Featuring a transparent OLED for the HUD, a 9-axis IMU for spatial tracking, and capacitive touch sensors, we combine portability with performance. The ESP32s relay data wirelessly from the glasses to the STM32 in the user's pocket which serves as the compute hub.
+      </p>
+    </div>
+
+    <h2><span class="sec-num">02</span> Motivation</h2>
+    <div class="card">
+      <p>
+        Argus helps bridge the gap between physical activity and real-time data accessibility without sacrificing situational awareness. While commercial AR glasses often prioritize complex media ecosystems and overlays, Argus focuses on lightweight, purpose-focused architecture that offloads heavy processing to a pocket-based STM32 to minimize weight. The sensors provide a distraction-free, hands-free HUD for users. Instead of having to look at a watch or pull out a phone, users can find relevant telemetry in their line of sight. The emphasis on power efficiency and simplicity makes it perfect for tasks like checking direction of travel while running or biking — where looking down could be unsafe.
+      </p>
+    </div>
+  </section>
+
+  <!-- SYSTEM DIAGRAM -->
+  <section id="system">
+    <h2><span class="sec-num">03</span> System Block Diagram</h2>
+    <div class="img-single">
+      <img src="image/README/1773671196132.png" alt="System Block Diagram" />
+    </div>
+    <p>The refined system diagram (MVP):</p>
+    <div class="img-single">
+      <img src="image/README/1776481041381.png" alt="Refined System Diagram" />
+    </div>
+  </section>
+
+  <!-- DESIGN SKETCHES -->
+  <section id="design">
+    <h2><span class="sec-num">04</span> Design Sketches</h2>
+    <p>The frame of the glasses is customized through 3D printing and laser cutting to house all hardware components.</p>
+    <div class="img-grid">
+      <div class="img-card">
+        <img src="image/README/1773644038002.jpg" alt="Design Sketch" />
+        <div class="img-caption">Initial design sketch</div>
+      </div>
+      <div class="img-card">
+        <img src="image/README/1775258730277.jpg" alt="Mechanical Layout" />
+        <div class="img-caption">Mechanical layout with optics</div>
+      </div>
+      <div class="img-card">
+        <img src="image/README/1775259339481.png" alt="Hardware Mount Prototype" />
+        <div class="img-caption">Hardware mount prototype</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REQUIREMENTS -->
+  <section id="requirements">
+    <h2><span class="sec-num">05</span> Software Requirements</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>SRS-01</td><td>The STM32 shall read the IMU accelerometer data over I2C at a minimum rate of 50 Hz to enable accurate step detection.</td></tr>
+          <tr><td>SRS-02</td><td>The step detection algorithm shall detect a walking step within 400ms of it occurring, with no more than 10% error over a 20-step walk test.</td></tr>
+          <tr><td>SRS-03</td><td>The display shall update its shown content within 500ms of a button press (full round-trip: glasses ESP32 → base ESP32 → STM32 → base ESP32 → glasses ESP32 → display).</td></tr>
+          <tr><td>SRS-04</td><td>The STM32 shall synchronize its RTC with NTP time via the base ESP32 over UART once at startup.</td></tr>
+          <tr><td>SRS-05</td><td>The display shall cycle through at least three different modes: time view, step count view, and compass view.</td></tr>
+          <tr><td>SRS-06</td><td>The STM32 shall receive and process data from the base ESP32 over UART within 100ms of transmission.</td></tr>
+          <tr><td>SRS-07</td><td>The STM32 shall compute the compass direction from the magnetometer data and display cardinal direction (N, NE, E, SE, S, SW, W, NW) accurate to within ±22.5 degrees after calibration.</td></tr>
+          <tr><td>SRS-08</td><td>The OLED display will communicate using SPI translated through UART wirelessly between the two ESP32S3 modules to maximize screen data bandwidth.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2><span class="sec-num">06</span> Hardware Requirements</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>HRS-01</td><td>The system shall use an IMU with at least 3-axis accelerometer, 3-axis gyroscope, and 3-axis magnetometer capabilities, communicating over I2C, for step-count and compass data.</td></tr>
+          <tr><td>HRS-02</td><td>The display shall be small enough to mount on glasses frames and support at least two lines of text output.</td></tr>
+          <tr><td>HRS-03</td><td>Several push buttons shall be mounted on the glasses frame and register a press within 100ms of actuation to enable mode toggling, parameter changes, and power on/off.</td></tr>
+          <tr><td>HRS-04</td><td>Two ESP32 modules shall maintain wireless connection with a round-trip latency of less than 500ms within 5m of distance.</td></tr>
+          <tr><td>HRS-05</td><td>The STM32 shall communicate with the base ESP32 over UART at a baud rate of at least 9600 bps.</td></tr>
+          <tr><td>HRS-06</td><td>The glasses shall be powered by a battery capable of powering the glasses for at least 15–30 minutes continuously.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- BOM -->
+  <section id="bom">
+    <h2><span class="sec-num">07</span> Bill of Materials</h2>
+    <div class="table-wrap">
+      <table class="bom-table">
+        <thead>
+          <tr><th>Component</th><th>Part</th><th>Justification</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Main Processor</td><td>NUCLEO-F411RE</td><td>Master controller: handles step-detection (SRS-02), RTC sync (SRS-04), and I2C sensor polling at 50 Hz (SRS-01).</td></tr>
+          <tr><td>Wireless Bridge</td><td>2× XIAO ESP32S3</td><td>Communication relay: facilitates 500ms round-trip display update (SRS-03) and wireless link (HRS-04).</td></tr>
+          <tr><td>Transparent HUD</td><td>DFR0934 OLED</td><td>Visual interface: small-form-factor mounting (HRS-02) supporting multi-mode display (SRS-05).</td></tr>
+          <tr><td>Motion Tracking</td><td>9-DOF IMU (BNO085)</td><td>3-axis Accel/Gyro/Mag data (HRS-01); enables compass accuracy within 22.5° (SRS-07) and step detection (SRS-02).</td></tr>
+          <tr><td>Power Isolation</td><td>Buck Converter</td><td>Prevents WiFi-burst brownouts; ensures 15–30 min continuous run-time (HRS-06).</td></tr>
+          <tr><td>User Input</td><td>5× Tactile Switches</td><td>Satisfies HRS-03 (registration within 100ms); enables mode toggling (SRS-05).</td></tr>
+          <tr><td>Power Source</td><td>1S LiPo Battery</td><td>Lightweight for glasses-mounting while meeting run-time specs (HRS-06).</td></tr>
+          <tr><td>Status Indicator</td><td>Power LED</td><td>Hardware-level on-state confirmation for power-on sequences (HRS-03).</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SPRINT PLANNING -->
+  <section id="progress">
+    <h2><span class="sec-num">08</span> Sprint Planning</h2>
+    <div class="sprint-grid">
+      <div class="sprint-card">
+        <h4>Sprint 1</h4>
+        <ul>
+          <li>Connect individual components (STM32 ↔ ESP32)</li>
+          <li>Verify UART + WiFi connection</li>
+          <li>Confirm button press registration</li>
+          <li>Prototype glasses frame</li>
+          <li>Synchronize RTC with NTP</li>
+        </ul>
+      </div>
+      <div class="sprint-card">
+        <h4>Sprint 2</h4>
+        <ul>
+          <li>STM32 receives IMU data over I2C</li>
+          <li>Display shows text/time</li>
+          <li>Finalize power source for glasses</li>
+          <li>Finalize glasses frame + fitting tests</li>
+        </ul>
+      </div>
+      <div class="sprint-card">
+        <h4>MVP Demo</h4>
+        <ul>
+          <li>Steps algorithm + compass working</li>
+          <li>Full integration of ESP32 + display onto frame</li>
+          <li>RTC calibration + sync verified</li>
+        </ul>
+      </div>
+      <div class="sprint-card">
+        <h4>Final Demo</h4>
+        <ul>
+          <li>Full end-to-end system functional</li>
+          <li>All requirements met</li>
+          <li>Live demo with someone wearing the glasses</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SPRINT REVIEWS TIMELINE -->
+  <section id="sprints">
+    <h2><span class="sec-num">09</span> Build Log</h2>
+    <div class="timeline">
+
+      <!-- Sprint 1 -->
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">Sprint Review #1</div>
+        <div class="tl-title">Hardware decisions & optical design</div>
+        <p>Switched from BNO085 to <strong>LSM6DS0</strong> to avoid the F411 clock-stretching errata — the LSM6DS0 has a built-in step counter and uses SPI, matching the screen bus and simplifying the driver stack.</p>
+        <p>Calculated object distance constraints from target virtual image distance and magnification. Designed mechanical layout for hardware and optics, with a secondary mirror to reduce mount size.</p>
+        <div class="img-grid">
+          <div class="img-card">
+            <img src="image/README/1775258313158.png" alt="Optics calculator" />
+            <div class="img-caption">d₀ vs. d₁ optics calculator</div>
+          </div>
+          <div class="img-card">
+            <img src="image/README/1775239160908.png" alt="Prototype mount" />
+            <div class="img-caption">Prototype hardware clip mount</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- April 9 update -->
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">April 9, 2026</div>
+        <div class="tl-title">SPI driver written, IMU driver in progress</div>
+        <p>Main SPI driver is complete. IMU driver for the LSM6DS0 is in progress using the textbook as reference. Basic GPIO input and input capture via buttons is working on the STM32. Mechanical design nearly finished.</p>
+      </div>
+
+      <!-- Sprint 2 -->
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">Sprint Review #2</div>
+        <div class="tl-title">OLED arrived, optics redesigned, IMU validated</div>
+        <p>The OLED arrived and its driver is in development. Raytracing simulation in Onshape was used to minimize the total mount thickness, and components were measured with calipers and imported into Fusion 360.</p>
+        <p>The step counter is fully working — there is an intentional delay to avoid over-counting from oscillatory motion. <a href="https://drive.google.com/file/d/1mDCpxerKAkAiZ3uGaSlx3KKA8HsJcfL3/view?usp=sharing" target="_blank" style="color:var(--accent);">Step counter demo video</a>.</p>
+        <div class="img-grid">
+          <div class="img-card">
+            <img src="image/README/1775961422875.png" alt="Design options" />
+            <div class="img-caption">Design variants analyzed</div>
+          </div>
+          <div class="img-card">
+            <img src="image/README/1775961446992.png" alt="Onshape raytracing" />
+            <div class="img-caption">Onshape optical simulation</div>
+          </div>
+          <div class="img-card">
+            <img src="image/README/1775961470511.png" alt="Fusion 360 CAD" />
+            <div class="img-caption">Fusion 360 component layout</div>
+          </div>
+          <div class="img-card">
+            <img src="image/README/1775964295827.jpg" alt="Step counter hardware" />
+            <div class="img-caption">Step counter setup</div>
+          </div>
+        </div>
+
+        <h3>MVP Status at Sprint 2</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Goal</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>IMU Step Counter</td><td><span class="badge badge-green">Complete</span></td></tr>
+              <tr><td>On-Screen Timer System</td><td><span class="badge badge-red">Incomplete</span></td></tr>
+              <tr><td>2–4 Buttons for Screen Control</td><td><span class="badge badge-red">Incomplete</span></td></tr>
+              <tr><td>Optical Waveguide HUD</td><td><span class="badge badge-yellow">In Progress</span></td></tr>
+              <tr><td>CAD of Glasses / Waveguide Holder</td><td><span class="badge badge-yellow">In Progress</span></td></tr>
+              <tr><td>Navigation System (Compass)</td><td><span class="badge badge-yellow">Parts ordered</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MVP Demo -->
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">MVP Demo</div>
+        <div class="tl-title">OLED functional, full firmware stack</div>
+        <p>Two independent SPI buses run simultaneously — one for the OLED, one for the IMU. The firmware stack spans <code>main.c</code>, <code>oled.c</code>, <code>spi.c</code>, <code>imu.c</code>, and <code>font.c</code>. IMU interrupts refresh the display on each step event.</p>
+        <div class="img-grid">
+          <div class="img-card">
+            <img src="image/README/1776478366829.png" alt="Working OLED" />
+            <div class="img-caption">Working OLED display</div>
+          </div>
+          <div class="img-card">
+            <img src="image/README/1776480969079.png" alt="IMU setup" />
+            <div class="img-caption">IMU setup</div>
+          </div>
+          <div class="img-card">
+            <img src="image/README/1776478420983.png" alt="Cardboard chassis" />
+            <div class="img-caption">Flexible cardboard chassis prototype</div>
+          </div>
+          <div class="img-card">
+            <img src="image/README/1776478376650.png" alt="Components in chassis" />
+            <div class="img-caption">Components fitted in chassis</div>
+          </div>
+          <div class="img-card">
+            <img src="image/README/1776478385772.png" alt="Glasses connection" />
+            <div class="img-caption">Glasses frame connection slots</div>
+          </div>
+          <div class="img-card">
+            <img src="image/README/1776478407053.png" alt="Updated CAD with mirror" />
+            <div class="img-caption">CAD updated with mirror dimensions</div>
+          </div>
+        </div>
+        <p>Optical analysis confirmed the virtual image is achievable with the updated lens and beamsplitter dimensions.</p>
+        <div class="img-grid">
+          <div class="img-card">
+            <img src="image/README/1776478445147.png" alt="Optical analysis" />
+            <div class="img-caption">Optical dimension analysis</div>
+          </div>
+          <div class="img-card">
+            <img src="image/README/1776478674170.png" alt="Ray simulation" />
+            <div class="img-caption">Ray simulation — beamsplitter + lens</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FINAL UPDATES -->
+  <section id="final">
+    <h2><span class="sec-num">10</span> Final Updates</h2>
+    <p>
+      A new lens was ordered due to supply chain delays — 25mm diameter, 71mm focal length. With the constraint that the human eye focuses best at distances greater than 25cm, the object distance was set to <strong>56mm</strong> to produce a virtual image beyond 250mm. The enclosure was redesigned to accommodate this, with mirrors placed parallel to maintain constant horizontal light travel distance.
+    </p>
+    <div class="img-grid">
+      <div class="img-card">
+        <img src="image/README/1776715744627.png" alt="New lens calculations" />
+        <div class="img-caption">Revised lens / image distance calc</div>
+      </div>
+      <div class="img-card">
+        <img src="image/README/1776715873380.png" alt="Mirror placement" />
+        <div class="img-caption">Parallel mirror placement design</div>
+      </div>
+      <div class="img-card">
+        <img src="image/README/1776715911116.png" alt="Printed enclosure" />
+        <div class="img-caption">3D-printed enclosure</div>
+      </div>
+    </div>
+    <p>Assembly of hardware components and projection testing:</p>
+    <div class="img-grid">
+      <div class="img-card">
+        <img src="image/README/1777042244777.jpg" alt="Hardware assembly" />
+        <div class="img-caption">Hardware assembly</div>
+      </div>
+      <div class="img-card">
+        <img src="image/README/1777042292677.jpg" alt="Projection test 1" />
+        <div class="img-caption">Projection test</div>
+      </div>
+      <div class="img-card">
+        <img src="image/README/1777042298013.jpg" alt="Projection test 2" />
+        <div class="img-caption">Projection result</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Argus &nbsp;·&nbsp; ESE 3500 Final Project &nbsp;·&nbsp; Team 15 &nbsp;·&nbsp; University of Pennsylvania &nbsp;·&nbsp; Spring 2026</p>
+  <p style="margin-top:0.5rem"><a href="https://github.com/upenn-embedded/final-project-s26-t15" target="_blank">github.com/upenn-embedded/final-project-s26-t15</a></p>
+</footer>
+
+<!-- THREE.JS STL VIEWER -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const canvas = document.getElementById('stl-canvas');
+const overlay = document.getElementById('stl-overlay');
+const fileInput = document.getElementById('stl-file-input');
+const btnUpload = document.getElementById('btn-upload-new');
+
+// Scene setup
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setClearColor(0x0e1420, 1);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(40, 1, 0.01, 10000);
+
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.rotateSpeed = 0.7;
+
+// Lights
+const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+scene.add(ambient);
+const key = new THREE.DirectionalLight(0x00d4ff, 1.2);
+key.position.set(5, 8, 5);
+scene.add(key);
+const fill = new THREE.DirectionalLight(0x7c3aed, 0.5);
+fill.position.set(-5, 2, -5);
+scene.add(fill);
+const rim = new THREE.DirectionalLight(0xffffff, 0.3);
+rim.position.set(0, -5, -5);
+scene.add(rim);
+
+// Grid
+const grid = new THREE.GridHelper(200, 40, 0x1e2d45, 0x1e2d45);
+grid.material.opacity = 0.4;
+grid.material.transparent = true;
+scene.add(grid);
+
+let mesh = null;
+
+function resize() {
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  if (canvas.width !== w || canvas.height !== h) {
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  resize();
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+function loadSTL(buffer) {
+  if (mesh) { scene.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose(); }
+
+  const loader = new STLLoader();
+  const geometry = loader.parse(buffer);
+  geometry.computeBoundingBox();
+  geometry.computeVertexNormals();
+
+  const box = geometry.boundingBox;
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+  geometry.translate(-center.x, -center.y, -center.z);
+
+  const size = new THREE.Vector3();
+  box.getSize(size);
+  const maxDim = Math.max(size.x, size.y, size.z);
+
+  const material = new THREE.MeshPhysicalMaterial({
+    color: 0x00d4ff,
+    metalness: 0.3,
+    roughness: 0.4,
+    clearcoat: 0.5,
+    clearcoatRoughness: 0.2,
+    side: THREE.DoubleSide,
+  });
+
+  mesh = new THREE.Mesh(geometry, material);
+  mesh.position.y = size.z * 0.5;
+  scene.add(mesh);
+
+  // Reposition grid
+  grid.position.y = 0;
+
+  // Fit camera
+  const dist = maxDim * 2.0;
+  camera.position.set(dist * 0.6, dist * 0.5, dist * 0.8);
+  camera.near = maxDim * 0.001;
+  camera.far = maxDim * 100;
+  camera.updateProjectionMatrix();
+  controls.target.set(0, size.z * 0.25, 0);
+  controls.update();
+
+  overlay.classList.add('hidden');
+}
+
+function handleFile(file) {
+  if (!file || !file.name.toLowerCase().endsWith('.stl')) return;
+  const reader = new FileReader();
+  reader.onload = e => loadSTL(e.target.result);
+  reader.readAsArrayBuffer(file);
+}
+
+overlay.addEventListener('click', () => fileInput.click());
+btnUpload.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
+
+canvas.addEventListener('dragover', e => { e.preventDefault(); });
+canvas.addEventListener('drop', e => {
+  e.preventDefault();
+  handleFile(e.dataTransfer.files[0]);
+});
+overlay.addEventListener('dragover', e => { e.preventDefault(); });
+overlay.addEventListener('drop', e => {
+  e.preventDefault();
+  handleFile(e.dataTransfer.files[0]);
+});
+</script>
+
+</body>
+</html>
