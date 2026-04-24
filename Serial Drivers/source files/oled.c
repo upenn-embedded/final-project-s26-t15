@@ -78,7 +78,7 @@ void oled_init(void) {
     oled_send_cmd(0x02);        // page addressing mode
 
     oled_send_cmd(0xA0);   // normal segment direction
-    oled_send_cmd(0xC8);   // mirrored COM scan (your original)
+    oled_send_cmd(0xC8);   // mirrored COM scan
 
     oled_send_cmd(0xDA);        // COM pins hardware config
     oled_send_cmd(0x12);
