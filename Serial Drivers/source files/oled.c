@@ -77,8 +77,8 @@ void oled_init(void) {
     oled_send_cmd(0x20);        // memory addressing mode
     oled_send_cmd(0x02);        // page addressing mode
 
-    oled_send_cmd(0xA0);   // normal segment direction
-    oled_send_cmd(0xC8);   // mirrored COM scan
+    oled_send_cmd(0xA0);   // Horizontal Mirroring to compensate for lens
+    oled_send_cmd(0xC8);
 
     oled_send_cmd(0xDA);        // COM pins hardware config
     oled_send_cmd(0x12);
@@ -127,3 +127,5 @@ void draw_pixel(uint8_t x, uint8_t y, uint8_t color) {
     oled_set_cursor(page, x);
     oled_send_data(framebuffer[page][x]);
 }
+
+

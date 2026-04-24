@@ -21,7 +21,7 @@
 // Screen state — volatile because ISR modifies it
 volatile uint8_t current_screen = 0; // state of screen
 volatile uint8_t screen_changed = 1;  // start with 1 to draw initial screen
-#define NUM_SCREENS 4
+#define NUM_SCREENS 5
 
 
 // timer variable
@@ -29,7 +29,8 @@ volatile uint32_t timer_seconds = 60;
 volatile uint32_t timer_running = 0;
 volatile uint32_t last_tick = 0;
 
-
+// brightness of OLED
+volatile uint8_t brightness_level = 1; // 0=Low, 1=Medium, 2=High, 3 = auto
 /*
  *  INTERRUPTS
  */
@@ -72,19 +73,24 @@ void EXTI2_IRQHandler(void) {
 void EXTI3_IRQHandler(void) {
 	 if (EXTI->PR & (1U << 3)) {
 	        EXTI->PR |= (1U << 3);
-	        if (!timer_running && timer_seconds < 3599) {
+	        if (!timer_running && timer_seconds < 3599 && current_screen == 3) {
 	            if (timer_seconds >= 3539) timer_seconds = 3599;
 	            else timer_seconds += 60;
 	            if (current_screen == 3) screen_changed = 1;
 	        }
-	    }
+	        if (current_screen == 4) {
+	        	if (brightness_level < 3) brightness_level++;
+	        	else brightness_level = 0;
+				screen_changed = 1;
+	        }
+	 }
 }
 
 // PB4 pressed. Decrements timer
 void EXTI4_IRQHandler(void) {
     if (EXTI->PR & (1U << 4)) {
         EXTI->PR |= (1U << 4);
-        if (!timer_running && timer_seconds > 0) {
+        if (!timer_running && timer_seconds > 0 && current_screen == 3) {
             if (timer_seconds <= 59) timer_seconds = 0;
             else timer_seconds -= 60;
             if (current_screen == 3) screen_changed = 1;
@@ -102,10 +108,10 @@ void TIM2_IRQHandler(void) {
     if (TIM2->SR & (1 << 0)) { // check if flag is set
         TIM2->SR &= ~(1 << 0); // clear flag
 
-        //BRIGHTNESS UPDATE
-        oled_brightness(adc_read());
+        // Update brightness auto
+        if (brightness_level == 3) oled_brightness(adc_read());
 
-        // TIME UPDATE
+        // Update Time
         second_calibration += 1;
         if (second_calibration == 9){
         	second_calibration = 0;
@@ -126,17 +132,21 @@ static void set_time_from_compile(void) {
 }
 
 
-// speed string
-volatile uint16_t speed;
-
 // Defining visible are of OLED
-#define VIS_X    18
-#define VIS_Y    10
-#define VIS_W    90
-#define VIS_H    44
-#define TOP_H    (VIS_H / 4)        // 11px  — 1/3 of bottom
-#define BOT_H    (VIS_H - TOP_H)    // 33px
-#define VIS_MID_Y (VIS_Y + TOP_H)
+// 6 pixels per character
+#define VIS_X    45 // X coordinate of the left edge (ends up being flipped horizontally, making it the right edge)
+#define VIS_Y    10 // y coordinate of the top edge
+#define VIS_W    80 // width of rectangles
+#define VIS_H    44 // total height of both rectangles combined
+#define TOP_H    (VIS_H / 4)        // 11px - height of top rectangle
+#define BOT_H    (VIS_H - TOP_H)    // 33px - height of bottom rectangle
+#define VIS_MID_Y (VIS_Y + TOP_H) // y coordinate of the top edge of bottom rectangle
+
+// FOR BOTTOM RECTANGLE: we get 3 lines of text
+// VIS_MID_Y + 3
+// VIS_MID_Y + 13
+// VIS_MID_Y + 23
+
 
 int main(void)
 {
@@ -157,18 +167,30 @@ int main(void)
         //while(1);
     }
 
-    char buf[6]; // for step count
+    char buf[12]; // for step count
+    char spd_buf[12] = "0.0 MPH";
+
+
 
 
     while (1) {
+
+    	if (timer_running && (get_tick() - last_tick >= 1000)) {
+    	    __disable_irq();
+    	    last_tick += 1000;
+    	    timer_seconds--;
+    	    if (current_screen == 3) screen_changed = 1;
+    	    if (timer_seconds == 0) timer_running = 0;
+    	    __enable_irq();
+    	}
 
     	// auto-update screen when step count updates
     	if (step_flag) {
     		step_flag = 0;
 
     		if (current_screen == 2) {
+    			calculate_speed_from_steps(spd_buf, sizeof(spd_buf));
     			screen_changed = 1;
-				speed = calculate_speed_from_steps();
     		}
     	}
 
@@ -185,8 +207,9 @@ int main(void)
     		switch (current_screen) {
     		// MAIN SCREEN
     			case 0:
-					draw_string(47, VIS_Y + 3, "Welcome");
-					draw_string(30, VIS_MID_Y + 5, "This is Argus.");
+    				draw_string(64, VIS_Y + 2, "Welcome");
+    				draw_string(61, VIS_MID_Y + 3,  "This is");
+    				draw_string(67, VIS_MID_Y + 13, "Argus.");
 					break;
 
     		// TIME
@@ -209,18 +232,16 @@ int main(void)
 					time_buf[7] = '0' + s % 10;
 					time_buf[8] = '\0';
 
-					draw_string(0, 0, "TIME");
-					draw_string(0, 10, time_buf);
-					draw_string(0, 20, period);
+					draw_string(73, VIS_Y + 2,      "TIME");
+					draw_string(61, VIS_MID_Y + 3,  time_buf);
+					draw_string(79, VIS_MID_Y + 13, period);
 					break;
 			// STEPS
     			case 2:
-					draw_string(46, VIS_Y + 3, "STEPS");
-					uint_to_str(read_steps(), buf);
-					draw_string(52, VIS_MID_Y + 1, buf);
-					draw_string(28, VIS_MID_Y + 10, "MPH:");
-					uint_to_str(speed, buf);
-					draw_string(52, VIS_MID_Y + 10, buf);
+    				draw_string(70, VIS_Y + 2,      "STEPS");
+    				uint_to_str(read_steps(), buf);
+    				draw_string(73, VIS_MID_Y + 3,  buf);
+    				draw_string(61, VIS_MID_Y + 13, spd_buf);
 					break;
 			// TIMER
     			case 3:
@@ -231,9 +252,23 @@ int main(void)
 					tbuf[2] = ':';
 					tbuf[3] = '0' + timer_second / 10; tbuf[4] = '0' + timer_second % 10;
 					tbuf[5] = '\0';
-					draw_string(47, VIS_Y + 3, "TIMER");
-					draw_string(49, VIS_MID_Y + 2, tbuf);
-					draw_string(28, VIS_MID_Y + 11, timer_running ? "RUNNING" : "STOPPED");
+					draw_string(70, VIS_Y + 2,      "TIMER");
+					draw_string(70, VIS_MID_Y + 3,  tbuf);
+					draw_string(64, VIS_MID_Y + 13, timer_running ? "RUNNING" : "STOPPED");
+					break;
+
+			// BRIGHTNESS CONTROL
+    			case 4:
+					draw_string(55, VIS_Y + 2, "BRIGHTNESS");
+
+					const uint8_t levels[3] = {50, 150, 255};
+					if (brightness_level < 3) oled_brightness(levels[brightness_level]);
+
+					// all the brightness types - 4 types: low, medium, high, auto
+					draw_string(VIS_X + 4, VIS_MID_Y + 3,  brightness_level == 0 ? ">Low"    : " Low");
+					draw_string(VIS_X + 4, VIS_MID_Y + 13, brightness_level == 1 ? ">Medium" : " Medium");
+					draw_string(VIS_X + 4, VIS_MID_Y + 23, brightness_level == 2 ? ">High"   : " High");
+					// IF none of the options are selected, it means auto.
 					break;
     		}
     	}
