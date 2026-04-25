@@ -128,14 +128,3 @@ void draw_string(uint8_t x, uint8_t y, const char *str) {
         str++;
     }
 }
-
-void draw_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
-    for (uint8_t i = x; i < x + w; i++) {
-        draw_pixel(i, y, 1);           // top
-        draw_pixel(i, y + h - 1, 1);  // bottom
-    }
-    for (uint8_t i = y; i < y + h; i++) {
-        draw_pixel(x, i, 1);           // left
-        draw_pixel(x + w - 1, i, 1);  // right
-    }
-}

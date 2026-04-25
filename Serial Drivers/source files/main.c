@@ -151,12 +151,13 @@ static void set_time_from_compile(void) {
 int main(void)
 {
 	delay_init(); // start counting ticks
-	spi2_init(); // SPI1 for IMU communication
+    spi1_init(); // SPI1 for IMU communication
     setup_GPIO(); // GPIO setup
     spi4_init(); // SPI4 for OLED
     oled_init(); // OLED
     exti_init(); // Initialize IMU interrupt on STM
     adc_init(); // ADC
+    imu_enable_step_interrupt(); // IMU interrupt enable
     TIM2_init(); // timer2 for interrupts
     rtc_init(); // RTC for the time
     set_time_from_compile();
@@ -165,8 +166,6 @@ int main(void)
         // If IMU fails, halt
         //while(1);
     }
-    imu_enable_step_interrupt(); // IMU interrupt enable
-
 
     char buf[12]; // for step count
     char spd_buf[12] = "0.0 MPH";

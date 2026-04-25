@@ -3,8 +3,7 @@
  *  Created on: 04/03/2026
  *  Author: Jerry Zhang
  *  Description: SPI driver for LCD display
- *  NOTE: Migrated from SPI1 -> SPI2 after SPI1 pins (PA5-PA9) were damaged.
- *        CS moved from PA9 -> PB9 (cs3_*).
+ *
  */
 
 
@@ -38,10 +37,10 @@ uint8_t imu_init(void) {
 * @note
 *****************************************************************************/
 void imu_write(uint8_t reg_addr, uint8_t data) {
-    cs3_enable();
-    spi2_transfer(reg_addr & ~0x80); // MSB is 0 to Write
-    spi2_transfer(data);     // send the data byte
-    cs3_disable();
+    cs1_enable();
+    spi1_transfer(reg_addr & ~0x80); // MSB is 0 to Write
+    spi1_transfer(data);     // send the data byte
+    cs1_disable();
 }
 
 /**************************************************************************//**
@@ -51,10 +50,10 @@ void imu_write(uint8_t reg_addr, uint8_t data) {
 *****************************************************************************/
 uint8_t imu_read(uint8_t reg_addr) {
     uint8_t result;
-    cs3_enable();
-    spi2_transfer(reg_addr | 0x80); // Set MSB to 1 to read
-    result = spi2_transfer(0x00);   // Send dummy byte to receive data
-    cs3_disable();
+    cs1_enable();
+    spi1_transfer(reg_addr | 0x80); // Set MSB to 1 to read
+    result = spi1_transfer(0x00);   // Send dummy byte to receive data
+    cs1_disable();
     return result;
 }
 
@@ -64,10 +63,10 @@ uint8_t imu_read(uint8_t reg_addr) {
 * @note
 *****************************************************************************/
 void imu_read_multiple(uint8_t reg_addr, uint8_t *buffer, uint32_t size) {
-    cs3_enable();
-    spi2_transfer(reg_addr | 0x80); // Set MSB to 1 to read
-    spi2_read(buffer, size);        // Read multiple bytes into buffer
-    cs3_disable();
+    cs1_enable();
+    spi1_transfer(reg_addr | 0x80); // Set MSB to 1 to read
+    spi1_read(buffer, size);        // Read multiple bytes into buffer
+    cs1_disable();
 }
 
 /**************************************************************************//**
@@ -114,7 +113,7 @@ void imu_enable_step_interrupt(void) {
 /**************************************************************************//**
 * @fn			void exti_init(void)
 * @brief		Initialize INT1 interrupt
-* @note         PA8 is unchanged - not a SPI1 pin, should be unaffected by the damage.
+* @note
 *****************************************************************************/
 void exti_init(void) {
     RCC->AHB1ENR |= (1U << 0);      // 1. Enable GPIOA clock
@@ -135,6 +134,11 @@ void exti_init(void) {
 volatile uint32_t step_count = 0;
 volatile uint8_t step_flag = 0;
 
+/**************************************************************************//**
+* @fn			void EXTI0_IRQHandler(void)
+* @brief		Handles the interrupt from the IMU on PA0
+* @note
+*****************************************************************************/
 /**************************************************************************//**
 * @fn			void EXTI9_5_IRQHandler(void)
 * @brief		Handles the interrupt from the IMU on PA8
@@ -177,7 +181,7 @@ void calculate_speed_from_steps(char *buffer, int size) {
 
 void imu_reset_steps(void) {
     uint8_t val = imu_read(IMU_CTRL10_C);
-
+    
     imu_write(IMU_CTRL10_C, val | (1U << 6));
 
     imu_write(IMU_CTRL10_C, val & ~(1U << 6));
