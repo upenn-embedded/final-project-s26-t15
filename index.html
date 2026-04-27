@@ -383,6 +383,30 @@
     }
     .tl-title { font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
 
+    /* PLACEHOLDERS */
+    .placeholder {
+      background: var(--surface);
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 2.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 1rem 0;
+    }
+    .placeholder .placeholder-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .placeholder strong { color: var(--text); display: block; margin-bottom: 0.25rem; }
+
+    /* FINAL REPORT HIGHLIGHT */
+    #report {
+      border-left: 3px solid var(--accent);
+      padding-left: 1.5rem;
+    }
+    #report h2 { color: var(--accent); }
+
+    /* VALIDATION TABLE */
+    .val-pass { color: var(--green); font-weight: 600; }
+
     /* FOOTER */
     footer {
       border-top: 1px solid var(--border);
@@ -425,11 +449,11 @@
 <nav>
   <a class="nav-brand" href="#">ARGUS</a>
   <ul class="nav-links">
+    <li><a href="#report">Final Report</a></li>
     <li><a href="#abstract">Overview</a></li>
     <li><a href="#requirements">Requirements</a></li>
     <li><a href="#bom">BOM</a></li>
     <li><a href="#progress">Progress</a></li>
-    <li><a href="#final">Final</a></li>
     <li><a href="https://github.com/upenn-embedded/final-project-s26-t15" target="_blank">GitHub</a></li>
   </ul>
 </nav>
@@ -476,6 +500,74 @@
 
 <!-- MAIN CONTENT -->
 <main>
+
+  <!-- FINAL REPORT -->
+  <section id="report">
+    <h2>Final Report</h2>
+
+    <h3>1. Video</h3>
+    <div class="placeholder">
+      <div class="placeholder-icon">🎬</div>
+      <strong>Demo video coming soon</strong>
+      Add a YouTube or Google Drive link here
+    </div>
+
+    <h3>2. Images</h3>
+    <div class="placeholder">
+      <div class="placeholder-icon">📷</div>
+      <strong>Final product photos coming soon</strong>
+      Add images of the completed glasses here
+    </div>
+
+    <h3>3. Results</h3>
+
+    <h4 style="font-size:0.95rem;font-weight:600;color:var(--text);margin:1.25rem 0 0.6rem;">3.1 Software Requirements Specification (SRS) Results</h4>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Description</th><th>Validation Outcome</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>SRS-01</td>
+            <td>The IMU 3-axis acceleration will be measured with 16-bit depth every 100 milliseconds ±10 milliseconds.</td>
+            <td><span class="val-pass">✓ Confirmed</span> — logged output from the MCU saved to "validation" folder in GitHub repository.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 style="font-size:0.95rem;font-weight:600;color:var(--text);margin:1.25rem 0 0.6rem;">3.2 Hardware Requirements Specification (HRS) Results</h4>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Description</th><th>Validation Outcome</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>HRS-01</td>
+            <td>A distance sensor shall be used for obstacle detection. The sensor shall detect obstacles at a maximum distance of at least 10 cm.</td>
+            <td><span class="val-pass">✓ Confirmed</span> — sensed obstacles up to 15 cm. Video in "validation" folder shows tape measure and logged terminal output.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>4. Conclusion</h3>
+    <div class="placeholder">
+      <div class="placeholder-icon">📝</div>
+      <strong>Conclusion coming soon</strong>
+      Summarize what was built, what worked, and what you'd improve
+    </div>
+
+    <h3>References</h3>
+    <div class="placeholder">
+      <div class="placeholder-icon">📚</div>
+      <strong>References coming soon</strong>
+    </div>
+  </section>
+
+  <hr class="divider" />
 
   <!-- ABSTRACT -->
   <section id="abstract">
