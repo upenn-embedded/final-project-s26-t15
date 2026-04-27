@@ -997,12 +997,115 @@ function animate() {
 }
 animate();
 
+// ── HUD screen factory ──────────────────────────────────────────────────────
+function createHUDScreen(maxDim) {
+  const W = 320, H = 200;
+  const cnv = document.createElement('canvas');
+  cnv.width = W; cnv.height = H;
+  const ctx = cnv.getContext('2d');
+
+  // Background
+  ctx.fillStyle = 'rgba(0, 8, 18, 0.86)';
+  ctx.beginPath();
+  const r = 10;
+  ctx.moveTo(r, 0); ctx.lineTo(W-r, 0); ctx.quadraticCurveTo(W, 0, W, r);
+  ctx.lineTo(W, H-r); ctx.quadraticCurveTo(W, H, W-r, H);
+  ctx.lineTo(r, H); ctx.quadraticCurveTo(0, H, 0, H-r);
+  ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  // Glow border
+  ctx.strokeStyle = '#00d4ff';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(r, 1); ctx.lineTo(W-r, 1); ctx.quadraticCurveTo(W-1, 1, W-1, r);
+  ctx.lineTo(W-1, H-r); ctx.quadraticCurveTo(W-1, H-1, W-r, H-1);
+  ctx.lineTo(r, H-1); ctx.quadraticCurveTo(1, H-1, 1, H-r);
+  ctx.lineTo(1, r); ctx.quadraticCurveTo(1, 1, r, 1);
+  ctx.closePath();
+  ctx.stroke();
+
+  // Corner brackets
+  const bl = 22, bo = 8;
+  ctx.lineWidth = 3; ctx.strokeStyle = '#00d4ff';
+  [[bo,bo],[W-bo,bo],[bo,H-bo],[W-bo,H-bo]].forEach(([x,y], i) => {
+    const sx = i % 2 === 0 ? 1 : -1, sy = i < 2 ? 1 : -1;
+    ctx.beginPath();
+    ctx.moveTo(x, y + sy * bl); ctx.lineTo(x, y); ctx.lineTo(x + sx * bl, y);
+    ctx.stroke();
+  });
+
+  // Scanlines
+  ctx.fillStyle = 'rgba(0,212,255,0.03)';
+  for (let y = 0; y < H; y += 3) ctx.fillRect(0, y, W, 1.5);
+
+  // Title
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 20px monospace';
+  ctx.fillStyle = '#00d4ff';
+  ctx.fillText('ARGUS', W / 2, 42);
+
+  // Divider
+  ctx.strokeStyle = 'rgba(0,212,255,0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(24, 54); ctx.lineTo(W-24, 54); ctx.stroke();
+
+  // Stats
+  ctx.textAlign = 'left';
+  ctx.font = '15px monospace';
+  ctx.fillStyle = 'rgba(0,212,255,0.55)';
+  ctx.fillText('TIME', 28, 80);
+  ctx.fillText('STEPS', 28, 110);
+  ctx.fillText('DIR', 28, 140);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 15px monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText('10:42 AM', W-28, 80);
+  ctx.fillText('4,231', W-28, 110);
+  ctx.fillText('NE  ↗', W-28, 140);
+
+  // Second divider
+  ctx.strokeStyle = 'rgba(0,212,255,0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(24, 152); ctx.lineTo(W-24, 152); ctx.stroke();
+
+  // Status dot
+  ctx.beginPath();
+  ctx.arc(34, 170, 5, 0, Math.PI * 2);
+  ctx.fillStyle = '#10b981';
+  ctx.fill();
+  ctx.font = '13px monospace';
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.textAlign = 'left';
+  ctx.fillText('SYSTEM ACTIVE', 46, 175);
+
+  const tex = new THREE.CanvasTexture(cnv);
+  const w = maxDim * 0.28, h = w * (H / W);
+
+  // Screen plane
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.95, side: THREE.DoubleSide, depthWrite: false });
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+  screen.renderOrder = 3;
+
+  // Outer glow
+  const glowMat = new THREE.MeshBasicMaterial({ color: 0x00d4ff, transparent: true, opacity: 0.07, side: THREE.DoubleSide, depthWrite: false });
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(w * 1.15, h * 1.18), glowMat);
+  glow.position.z = -0.5;
+  glow.renderOrder = 2;
+
+  const group = new THREE.Group();
+  group.add(glow);
+  group.add(screen);
+  return group;
+}
+
 // Load OBJ with MTL materials
 const mtlLoader = new MTLLoader();
 mtlLoader.load('Glasses%20Final.mtl', materials => {
   materials.preload();
 
-  // Enhance shininess on all materials since MTL only defines diffuse
   Object.values(materials.materials).forEach(mat => {
     mat.shininess = 60;
     mat.specular = new THREE.Color(0x333333);
@@ -1013,7 +1116,6 @@ mtlLoader.load('Glasses%20Final.mtl', materials => {
   objLoader.load(
     'Glasses%20Final.obj',
     object => {
-      // Shadows + fix glass transparency (Fusion doesn't export d/Tr values)
       object.traverse(child => {
         if (!child.isMesh) return;
         child.castShadow = true;
@@ -1028,20 +1130,37 @@ mtlLoader.load('Glasses%20Final.mtl', materials => {
         }
       });
 
-      // Center the model
+      // Center geometry at origin via position offset
       const box = new THREE.Box3().setFromObject(object);
       const center = new THREE.Vector3();
       box.getCenter(center);
       object.position.sub(center);
-      model = object;
-      scene.add(object);
 
-      // Fit camera
-      const size = new THREE.Vector3();
-      box.getSize(size);
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const dist = maxDim * 1.75;
-      camera.position.set(dist * 0.55, dist * 0.4, dist * 0.85);
+      // tiltGroup: rotates the glasses to face the viewer (−90° around X
+      // because the glasses load pointing down, i.e. front faces −Y)
+      const tiltGroup = new THREE.Group();
+      tiltGroup.rotation.x = -Math.PI / 2;
+      tiltGroup.add(object);
+
+      // spinGroup: drives the Z-axis animation; children spin around world Z
+      const spinGroup = new THREE.Group();
+      spinGroup.add(tiltGroup);
+      scene.add(spinGroup);
+      model = spinGroup;
+
+      // Compute post-rotation bounding box for camera fitting
+      const worldBox = new THREE.Box3().setFromObject(spinGroup);
+      const worldSize = new THREE.Vector3();
+      worldBox.getSize(worldSize);
+      const maxDim = Math.max(worldSize.x, worldSize.y, worldSize.z);
+
+      // HUD screen floats in front of the glasses (+Z in spinGroup space)
+      const hud = createHUDScreen(maxDim);
+      hud.position.set(0, maxDim * 0.05, maxDim * 0.28);
+      spinGroup.add(hud);
+
+      const dist = maxDim * 1.9;
+      camera.position.set(dist * 0.45, dist * 0.3, dist * 1.0);
       camera.near = maxDim * 0.001;
       camera.far = maxDim * 100;
       camera.updateProjectionMatrix();
