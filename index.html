@@ -138,41 +138,37 @@
     }
     .stl-viewer-wrapper {
       position: relative;
-      background: var(--surface);
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 16px;
       overflow: hidden;
     }
     #stl-canvas {
       width: 100%;
-      height: 420px;
+      height: 460px;
       display: block;
     }
-    .stl-overlay {
+    .stl-loading {
       position: absolute;
       inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 1rem;
-      background: rgba(14,20,32,0.92);
-      transition: opacity 0.4s;
-      cursor: pointer;
+      gap: 0.9rem;
+      pointer-events: none;
+      transition: opacity 0.5s;
     }
-    .stl-overlay.hidden { opacity: 0; pointer-events: none; }
-    .upload-icon {
-      width: 56px; height: 56px;
-      border: 2px dashed var(--accent);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.8rem;
+    .stl-loading.hidden { opacity: 0; }
+    .loading-ring {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
     }
-    .stl-overlay p { color: var(--muted); font-size: 0.9rem; }
-    .stl-overlay strong { color: var(--accent); }
-    #stl-file-input { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .stl-loading p { color: var(--muted); font-size: 0.85rem; }
     .stl-controls {
       display: flex;
       align-items: center;
@@ -183,18 +179,7 @@
       color: var(--muted);
     }
     .stl-hint { display: flex; gap: 1.5rem; }
-    .stl-hint span::before { margin-right: 0.3rem; }
-    .btn-upload {
-      padding: 0.35rem 0.9rem;
-      border-radius: 6px;
-      border: 1px solid var(--accent);
-      background: transparent;
-      color: var(--accent);
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: background 0.2s, color 0.2s;
-    }
-    .btn-upload:hover { background: var(--accent); color: #000; }
+    .stl-model-name { color: var(--accent); font-size: 0.78rem; letter-spacing: 0.04em; }
 
     /* MAIN CONTENT */
     main {
@@ -294,17 +279,23 @@
       border: 1px solid var(--border);
       border-radius: 10px;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
     .img-card img {
       width: 100%;
-      height: 200px;
-      object-fit: cover;
+      height: auto;
+      max-height: 260px;
+      object-fit: contain;
       display: block;
+      padding: 0.75rem;
+      flex: 1;
     }
     .img-card .img-caption {
-      padding: 0.6rem 0.9rem;
+      padding: 0.5rem 0.9rem 0.7rem;
       font-size: 0.78rem;
       color: var(--muted);
+      border-top: 1px solid var(--border);
     }
     .img-single {
       margin: 1.5rem 0;
@@ -312,10 +303,12 @@
       border-radius: 10px;
       overflow: hidden;
       background: var(--surface);
+      padding: 1rem;
     }
     .img-single img {
       width: 100%;
-      max-height: 400px;
+      height: auto;
+      max-height: 480px;
       object-fit: contain;
       display: block;
     }
@@ -458,14 +451,10 @@
   <div class="stl-section">
     <div class="stl-viewer-wrapper">
       <canvas id="stl-canvas"></canvas>
-      <div class="stl-overlay" id="stl-overlay">
-        <div class="upload-icon">⬆</div>
-        <div>
-          <strong>Upload a 3D model</strong>
-          <p>Drop an .stl file here or click to browse</p>
-        </div>
+      <div class="stl-loading" id="stl-loading">
+        <div class="loading-ring"></div>
+        <p>Loading 3D model…</p>
       </div>
-      <input type="file" id="stl-file-input" accept=".stl" />
     </div>
     <div class="stl-controls">
       <div class="stl-hint">
@@ -473,7 +462,7 @@
         <span>🔍 Scroll to zoom</span>
         <span>⇧ Right-drag to pan</span>
       </div>
-      <button class="btn-upload" id="btn-upload-new">Upload STL</button>
+      <span class="stl-model-name">Argus Frame — Final Design</span>
     </div>
   </div>
 
@@ -823,43 +812,48 @@ import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const canvas = document.getElementById('stl-canvas');
-const overlay = document.getElementById('stl-overlay');
-const fileInput = document.getElementById('stl-file-input');
-const btnUpload = document.getElementById('btn-upload-new');
+const loading = document.getElementById('stl-loading');
 
-// Scene setup
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setClearColor(0x0e1420, 1);
+// Renderer
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(0x080c14, 1);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(40, 1, 0.01, 10000);
+const camera = new THREE.PerspectiveCamera(36, 1, 0.01, 10000);
 
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-controls.rotateSpeed = 0.7;
+controls.dampingFactor = 0.06;
+controls.rotateSpeed = 0.65;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.8;
 
-// Lights
-const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+// Product-render lighting
+const ambient = new THREE.AmbientLight(0xffffff, 0.55);
 scene.add(ambient);
-const key = new THREE.DirectionalLight(0x00d4ff, 1.2);
-key.position.set(5, 8, 5);
+
+const key = new THREE.DirectionalLight(0xffffff, 2.0);
+key.position.set(4, 7, 5);
+key.castShadow = true;
+key.shadow.mapSize.setScalar(2048);
+key.shadow.bias = -0.0005;
 scene.add(key);
-const fill = new THREE.DirectionalLight(0x7c3aed, 0.5);
-fill.position.set(-5, 2, -5);
+
+const fill = new THREE.DirectionalLight(0xaaccff, 0.5);
+fill.position.set(-5, 2, -3);
 scene.add(fill);
-const rim = new THREE.DirectionalLight(0xffffff, 0.3);
-rim.position.set(0, -5, -5);
+
+const rim = new THREE.DirectionalLight(0x00d4ff, 0.35);
+rim.position.set(1, -4, -6);
 scene.add(rim);
 
-// Grid
-const grid = new THREE.GridHelper(200, 40, 0x1e2d45, 0x1e2d45);
-grid.material.opacity = 0.4;
-grid.material.transparent = true;
-scene.add(grid);
-
-let mesh = null;
+// Subtle top light
+const top = new THREE.DirectionalLight(0xffffff, 0.3);
+top.position.set(0, 10, 0);
+scene.add(top);
 
 function resize() {
   const w = canvas.clientWidth;
@@ -879,72 +873,65 @@ function animate() {
 }
 animate();
 
-function loadSTL(buffer) {
-  if (mesh) { scene.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose(); }
+// Load STL from repo
+fetch('Glasses%20Final%20ALL%20copy.stl')
+  .then(r => {
+    if (!r.ok) throw new Error(r.statusText);
+    return r.arrayBuffer();
+  })
+  .then(buffer => {
+    const loader = new STLLoader();
+    const geometry = loader.parse(buffer);
+    geometry.computeBoundingBox();
+    geometry.computeVertexNormals();
 
-  const loader = new STLLoader();
-  const geometry = loader.parse(buffer);
-  geometry.computeBoundingBox();
-  geometry.computeVertexNormals();
+    // Center geometry at origin
+    const box = geometry.boundingBox;
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    geometry.translate(-center.x, -center.y, -center.z);
 
-  const box = geometry.boundingBox;
-  const center = new THREE.Vector3();
-  box.getCenter(center);
-  geometry.translate(-center.x, -center.y, -center.z);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const maxDim = Math.max(size.x, size.y, size.z);
 
-  const size = new THREE.Vector3();
-  box.getSize(size);
-  const maxDim = Math.max(size.x, size.y, size.z);
+    // Light gray PLA-style material
+    const material = new THREE.MeshPhysicalMaterial({
+      color: 0xdce6f0,
+      metalness: 0.04,
+      roughness: 0.58,
+      clearcoat: 0.25,
+      clearcoatRoughness: 0.35,
+      side: THREE.DoubleSide,
+    });
 
-  const material = new THREE.MeshPhysicalMaterial({
-    color: 0x00d4ff,
-    metalness: 0.3,
-    roughness: 0.4,
-    clearcoat: 0.5,
-    clearcoatRoughness: 0.2,
-    side: THREE.DoubleSide,
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+
+    // Fit camera
+    const dist = maxDim * 1.75;
+    camera.position.set(dist * 0.55, dist * 0.4, dist * 0.85);
+    camera.near = maxDim * 0.001;
+    camera.far = maxDim * 100;
+    camera.updateProjectionMatrix();
+    controls.target.set(0, 0, 0);
+    controls.update();
+
+    loading.classList.add('hidden');
+  })
+  .catch(err => {
+    console.error('STL load error:', err);
+    const p = loading.querySelector('p');
+    if (p) p.textContent = 'Could not load model.';
+    const ring = loading.querySelector('.loading-ring');
+    if (ring) ring.style.display = 'none';
   });
 
-  mesh = new THREE.Mesh(geometry, material);
-  mesh.position.y = size.z * 0.5;
-  scene.add(mesh);
-
-  // Reposition grid
-  grid.position.y = 0;
-
-  // Fit camera
-  const dist = maxDim * 2.0;
-  camera.position.set(dist * 0.6, dist * 0.5, dist * 0.8);
-  camera.near = maxDim * 0.001;
-  camera.far = maxDim * 100;
-  camera.updateProjectionMatrix();
-  controls.target.set(0, size.z * 0.25, 0);
-  controls.update();
-
-  overlay.classList.add('hidden');
-}
-
-function handleFile(file) {
-  if (!file || !file.name.toLowerCase().endsWith('.stl')) return;
-  const reader = new FileReader();
-  reader.onload = e => loadSTL(e.target.result);
-  reader.readAsArrayBuffer(file);
-}
-
-overlay.addEventListener('click', () => fileInput.click());
-btnUpload.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
-
-canvas.addEventListener('dragover', e => { e.preventDefault(); });
-canvas.addEventListener('drop', e => {
-  e.preventDefault();
-  handleFile(e.dataTransfer.files[0]);
-});
-overlay.addEventListener('dragover', e => { e.preventDefault(); });
-overlay.addEventListener('drop', e => {
-  e.preventDefault();
-  handleFile(e.dataTransfer.files[0]);
-});
+// Stop auto-rotate when user interacts, resume after
+canvas.addEventListener('pointerdown', () => { controls.autoRotate = false; });
+canvas.addEventListener('pointerup',   () => { controls.autoRotate = true; });
 </script>
 
 </body>
