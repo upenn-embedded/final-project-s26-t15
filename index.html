@@ -991,7 +991,7 @@ let model = null;
 function animate() {
   requestAnimationFrame(animate);
   resize();
-  if (autoSpin && model) model.rotation.z += 0.004;
+  if (autoSpin && model) model.rotation.y += 0.004;
   controls.update();
   renderer.render(scene, camera);
 }
@@ -1156,7 +1156,7 @@ mtlLoader.load('Glasses%20Final.mtl', materials => {
 
       // HUD screen floats in front of the glasses (+Z in spinGroup space)
       const hud = createHUDScreen(maxDim);
-      hud.position.set(0, maxDim * 0.05, maxDim * 0.28);
+      hud.position.set(-maxDim * 0.22, maxDim * 0.05, maxDim * 0.45);
       spinGroup.add(hud);
 
       const dist = maxDim * 1.9;
