@@ -395,6 +395,20 @@
     }
     .tl-title { font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
 
+    /* VIDEO */
+    .video-wrap {
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+      margin: 1rem 0;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    }
+    .video-wrap video {
+      width: 100%;
+      display: block;
+      max-height: 560px;
+    }
+
     /* PLACEHOLDERS */
     .placeholder {
       background: var(--surface);
@@ -475,7 +489,7 @@
   <div class="hero-badge">ESE 3500 &nbsp;·&nbsp; Team 15 &nbsp;·&nbsp; Spring 2026</div>
   <h1>Argus</h1>
   <p class="hero-sub">
-    Augmented reality smart glasses with a transparent OLED HUD, 9-axis IMU, wireless data relay, and real-time activity tracking — always in your line of sight.
+    Augmented reality smart glasses with a transparent OLED HUD, live sensor processing, wireless functionality, and real-time activity tracking — always in your line of sight.
   </p>
   <div class="team-chips">
     <span class="chip">Seth Lee &nbsp;·&nbsp; sethlee@seas.upenn.edu</span>
@@ -522,10 +536,10 @@
     <h2>Final Report</h2>
 
     <h3>1. Video</h3>
-    <div class="placeholder">
-      <div class="placeholder-icon">🎬</div>
-      <strong>Demo video coming soon</strong>
-      Add a YouTube or Google Drive link here
+    <div class="video-wrap">
+      <video controls playsinline preload="metadata">
+        <source src="ese%203500%20final%20video.mp4" type="video/mp4" />
+      </video>
     </div>
 
     <h3>2. Images</h3>
