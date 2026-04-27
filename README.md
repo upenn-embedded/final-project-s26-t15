@@ -416,4 +416,6 @@ Firmware System:
 
 ### 4. Conclusion
 
+Overall, the project was mostly successful and the most important features were completed and demonstrated.
+
 ## References
