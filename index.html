@@ -1101,6 +1101,65 @@ function createHUDScreen(maxDim) {
   return group;
 }
 
+// ── Projection beam (V-cone from glasses to HUD) ────────────────────────────
+function createProjectionBeam(hudPos, hudW, hudH, maxDim) {
+  // Apex: roughly where the beamsplitter exits on the glasses
+  const ax = hudPos.x * 0.6, ay = hudPos.y * 0.4, az = maxDim * 0.04;
+  const apex = [ax, ay, az];
+
+  // Four corners of the HUD rectangle
+  const hw = hudW / 2, hh = hudH / 2;
+  const cx = hudPos.x, cy = hudPos.y, cz = hudPos.z;
+  const tl = [cx - hw, cy + hh, cz];
+  const tr = [cx + hw, cy + hh, cz];
+  const bl = [cx - hw, cy - hh, cz];
+  const br = [cx + hw, cy - hh, cz];
+
+  // Four triangular side faces of the pyramid
+  const verts = new Float32Array([
+    ...apex, ...tl, ...tr,   // top face
+    ...apex, ...br, ...bl,   // bottom face
+    ...apex, ...bl, ...tl,   // left face
+    ...apex, ...tr, ...br,   // right face
+  ]);
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+  geo.computeVertexNormals();
+
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0x00d4ff,
+    transparent: true,
+    opacity: 0.07,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+
+  // Thin edge lines along the four V-arms for crispness
+  const lineVerts = new Float32Array([
+    ...apex, ...tl,
+    ...apex, ...tr,
+    ...apex, ...bl,
+    ...apex, ...br,
+  ]);
+  const lineGeo = new THREE.BufferGeometry();
+  lineGeo.setAttribute('position', new THREE.BufferAttribute(lineVerts, 3));
+  const lineMat = new THREE.LineBasicMaterial({
+    color: 0x00d4ff,
+    transparent: true,
+    opacity: 0.25,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  const group = new THREE.Group();
+  group.add(new THREE.Mesh(geo, mat));
+  group.add(new THREE.LineSegments(lineGeo, lineMat));
+  group.renderOrder = 1;
+  return group;
+}
+
 // Load OBJ with MTL materials
 const mtlLoader = new MTLLoader();
 mtlLoader.load('Glasses%20Final.mtl', materials => {
@@ -1155,9 +1214,17 @@ mtlLoader.load('Glasses%20Final.mtl', materials => {
       const maxDim = Math.max(worldSize.x, worldSize.y, worldSize.z);
 
       // HUD screen floats in front of the glasses (+Z in spinGroup space)
+      const hudW = maxDim * 0.28;
+      const hudH = hudW * (200 / 320);
+      const hudPos = new THREE.Vector3(-maxDim * 0.17, maxDim * 0.05, maxDim * 0.56);
+
       const hud = createHUDScreen(maxDim);
-      hud.position.set(-maxDim * 0.22, maxDim * 0.05, maxDim * 0.45);
+      hud.position.copy(hudPos);
       spinGroup.add(hud);
+
+      // Projection beam: V-shaped cone from glasses toward HUD
+      const beam = createProjectionBeam(hudPos, hudW, hudH, maxDim);
+      spinGroup.add(beam);
 
       const dist = maxDim * 1.9;
       camera.position.set(dist * 0.45, dist * 0.3, dist * 1.0);
