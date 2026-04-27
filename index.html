@@ -513,15 +513,45 @@
     </div>
 
     <h3>2. Images</h3>
-    <div class="placeholder">
-      <div class="placeholder-icon">📷</div>
-      <strong>Final product photos coming soon</strong>
-      Add images of the completed glasses here
+    <div class="img-grid">
+      <div class="img-card">
+        <img src="image/README/1777258583581.jpg" alt="Demo Day Success" />
+        <div class="img-caption">Demo Day Success</div>
+      </div>
+      <div class="img-card">
+        <img src="image/README/1777258599590.jpg" alt="Final Assembly" />
+        <div class="img-caption">Final Assembly</div>
+      </div>
+      <div class="img-card">
+        <img src="image/README/1777258625467.jpg" alt="Visible Projection" />
+        <div class="img-caption">Visible Projection</div>
+      </div>
+      <div class="img-card">
+        <img src="image/README/1777258663523.png" alt="Final CAD" />
+        <div class="img-caption">Final CAD</div>
+      </div>
     </div>
 
     <h3>3. Results</h3>
 
-    <h4 style="font-size:0.95rem;font-weight:600;color:var(--text);margin:1.25rem 0 0.6rem;">3.1 Software Requirements Specification (SRS) Results</h4>
+    <div class="card" style="margin-bottom:1rem;">
+      <h4 style="font-size:0.9rem;font-weight:600;color:var(--accent);margin-bottom:0.6rem;text-transform:uppercase;letter-spacing:0.06em;">Optical System</h4>
+      <p style="margin:0;">The optical subsystem was highly successful, creating a visible and clear projection of the OLED in the user's view. The text on the OLED was reflected by two mirrors and directed through a convex lens, hitting a beamsplitter that brought half the light into the user's eye. A virtual image was created 256mm in front, overlaid on the rest of the field of view to create the augmented reality effect. The final design used a 25mm diameter convex lens with a 71mm focal point, two 35×15mm first-surface mirrors placed at 45° and parallel to each other, and a 50×30mm 50/50 beamsplitter. Total light path distance was 56mm, producing a virtual image at −265mm with a magnification of 4.73. A key design change — switching from a 32mm to 71mm focal length lens — was required to push the virtual image beyond 250mm, the minimum for a clear human eye focus.</p>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <h4 style="font-size:0.9rem;font-weight:600;color:var(--accent);margin-bottom:0.6rem;text-transform:uppercase;letter-spacing:0.06em;">Mechanical System</h4>
+      <p style="margin:0;">The enclosure and lid were designed in Fusion 360, with subsystems optimized in Onshape. The enclosure fits the STM32, OLED, IMU, and buttons. Due to soldering difficulty, not all components ended up inside the enclosure during the demo — however, with thinner flexible wires they would fit comfortably, as validated by calipers and CAD assembly. The optical distances were accurately reflected in the CAD, enabling a clear image on the first assembly attempt.</p>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <h4 style="font-size:0.9rem;font-weight:600;color:var(--accent);margin-bottom:0.6rem;text-transform:uppercase;letter-spacing:0.06em;">Hardware &amp; Firmware Systems</h4>
+      <div class="placeholder" style="margin:0;padding:1rem;">
+        <strong>Details coming soon</strong>
+      </div>
+    </div>
+
+    <h4 style="font-size:0.95rem;font-weight:600;color:var(--text);margin:1.5rem 0 0.6rem;">3.1 SRS Results</h4>
     <div class="table-wrap">
       <table>
         <thead>
@@ -537,7 +567,7 @@
       </table>
     </div>
 
-    <h4 style="font-size:0.95rem;font-weight:600;color:var(--text);margin:1.25rem 0 0.6rem;">3.2 Hardware Requirements Specification (HRS) Results</h4>
+    <h4 style="font-size:0.95rem;font-weight:600;color:var(--text);margin:1.5rem 0 0.6rem;">3.2 HRS Results</h4>
     <div class="table-wrap">
       <table>
         <thead>
@@ -554,10 +584,8 @@
     </div>
 
     <h3>4. Conclusion</h3>
-    <div class="placeholder">
-      <div class="placeholder-icon">📝</div>
-      <strong>Conclusion coming soon</strong>
-      Summarize what was built, what worked, and what you'd improve
+    <div class="card">
+      <p style="margin:0;">Overall, the project was mostly successful and the most important features were completed and demonstrated.</p>
     </div>
 
     <h3>References</h3>
