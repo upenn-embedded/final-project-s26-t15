@@ -462,7 +462,7 @@
         <span>🔍 Scroll to zoom</span>
         <span>⇧ Right-drag to pan</span>
       </div>
-      <span class="stl-model-name">Argus Frame — Final Design</span>
+      <span class="stl-model-name">Argus Frame — Fusion 360 Final Design</span>
     </div>
   </div>
 
@@ -808,7 +808,8 @@
 </script>
 <script type="module">
 import * as THREE from 'three';
-import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const canvas = document.getElementById('stl-canvas');
@@ -832,10 +833,10 @@ controls.autoRotate = true;
 controls.autoRotateSpeed = 0.8;
 
 // Product-render lighting
-const ambient = new THREE.AmbientLight(0xffffff, 0.55);
+const ambient = new THREE.AmbientLight(0xffffff, 0.6);
 scene.add(ambient);
 
-const key = new THREE.DirectionalLight(0xffffff, 2.0);
+const key = new THREE.DirectionalLight(0xffffff, 2.2);
 key.position.set(4, 7, 5);
 key.castShadow = true;
 key.shadow.mapSize.setScalar(2048);
@@ -846,11 +847,10 @@ const fill = new THREE.DirectionalLight(0xaaccff, 0.5);
 fill.position.set(-5, 2, -3);
 scene.add(fill);
 
-const rim = new THREE.DirectionalLight(0x00d4ff, 0.35);
+const rim = new THREE.DirectionalLight(0x88ddff, 0.3);
 rim.position.set(1, -4, -6);
 scene.add(rim);
 
-// Subtle top light
 const top = new THREE.DirectionalLight(0xffffff, 0.3);
 top.position.set(0, 10, 0);
 scene.add(top);
@@ -873,63 +873,65 @@ function animate() {
 }
 animate();
 
-// Load STL from repo
-fetch('Glasses%20Final%20ALL%20copy.stl')
-  .then(r => {
-    if (!r.ok) throw new Error(r.statusText);
-    return r.arrayBuffer();
-  })
-  .then(buffer => {
-    const loader = new STLLoader();
-    const geometry = loader.parse(buffer);
-    geometry.computeBoundingBox();
-    geometry.computeVertexNormals();
+// Load OBJ with MTL materials
+const mtlLoader = new MTLLoader();
+mtlLoader.load('Glasses%20Final.mtl', materials => {
+  materials.preload();
 
-    // Center geometry at origin
-    const box = geometry.boundingBox;
-    const center = new THREE.Vector3();
-    box.getCenter(center);
-    geometry.translate(-center.x, -center.y, -center.z);
-
-    const size = new THREE.Vector3();
-    box.getSize(size);
-    const maxDim = Math.max(size.x, size.y, size.z);
-
-    // Light gray PLA-style material
-    const material = new THREE.MeshPhysicalMaterial({
-      color: 0xdce6f0,
-      metalness: 0.04,
-      roughness: 0.58,
-      clearcoat: 0.25,
-      clearcoatRoughness: 0.35,
-      side: THREE.DoubleSide,
-    });
-
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    scene.add(mesh);
-
-    // Fit camera
-    const dist = maxDim * 1.75;
-    camera.position.set(dist * 0.55, dist * 0.4, dist * 0.85);
-    camera.near = maxDim * 0.001;
-    camera.far = maxDim * 100;
-    camera.updateProjectionMatrix();
-    controls.target.set(0, 0, 0);
-    controls.update();
-
-    loading.classList.add('hidden');
-  })
-  .catch(err => {
-    console.error('STL load error:', err);
-    const p = loading.querySelector('p');
-    if (p) p.textContent = 'Could not load model.';
-    const ring = loading.querySelector('.loading-ring');
-    if (ring) ring.style.display = 'none';
+  // Enhance shininess on all materials since MTL only defines diffuse
+  Object.values(materials.materials).forEach(mat => {
+    mat.shininess = 60;
+    mat.specular = new THREE.Color(0x333333);
   });
 
-// Stop auto-rotate when user interacts, resume after
+  const objLoader = new OBJLoader();
+  objLoader.setMaterials(materials);
+  objLoader.load(
+    'Glasses%20Final.obj',
+    object => {
+      // Enable shadows on every mesh
+      object.traverse(child => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      // Center the model
+      const box = new THREE.Box3().setFromObject(object);
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      object.position.sub(center);
+      scene.add(object);
+
+      // Fit camera
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const dist = maxDim * 1.75;
+      camera.position.set(dist * 0.55, dist * 0.4, dist * 0.85);
+      camera.near = maxDim * 0.001;
+      camera.far = maxDim * 100;
+      camera.updateProjectionMatrix();
+      controls.target.set(0, 0, 0);
+      controls.update();
+
+      loading.classList.add('hidden');
+    },
+    null,
+    err => {
+      console.error('OBJ load error:', err);
+      const p = loading.querySelector('p');
+      if (p) p.textContent = 'Could not load model.';
+      const ring = loading.querySelector('.loading-ring');
+      if (ring) ring.style.display = 'none';
+    }
+  );
+}, null, err => {
+  console.error('MTL load error:', err);
+});
+
+// Pause auto-rotate on interaction, resume on release
 canvas.addEventListener('pointerdown', () => { controls.autoRotate = false; });
 canvas.addEventListener('pointerup',   () => { controls.autoRotate = true; });
 </script>
