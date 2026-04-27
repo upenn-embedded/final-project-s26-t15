@@ -1082,6 +1082,10 @@ function createHUDScreen(maxDim) {
   ctx.fillText('SYSTEM ACTIVE', 46, 175);
 
   const tex = new THREE.CanvasTexture(cnv);
+  // Mirror horizontally — projection reflects off beamsplitter so text appears flipped
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.repeat.x = -1;
+  tex.offset.x = 1;
   const w = maxDim * 0.28, h = w * (H / W);
 
   // Screen plane
@@ -1216,7 +1220,7 @@ mtlLoader.load('Glasses%20Final.mtl', materials => {
       // HUD screen floats in front of the glasses (+Z in spinGroup space)
       const hudW = maxDim * 0.28;
       const hudH = hudW * (200 / 320);
-      const hudPos = new THREE.Vector3(-maxDim * 0.17, maxDim * 0.05, maxDim * 0.56);
+      const hudPos = new THREE.Vector3(-maxDim * 0.17, maxDim * 0.05, maxDim * 0.72);
 
       const hud = createHUDScreen(maxDim);
       hud.position.copy(hudPos);
