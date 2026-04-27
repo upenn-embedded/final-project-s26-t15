@@ -375,7 +375,16 @@ If you’ve never made a GitHub pages website before, you can follow this webpag
 
 ### 2. Images
 
+
 ### 3. Results
+
+Optical System: The optical subsystem was highly successful, creating a visible and clear projection of the OLED in the user's view. The text on the OLED was reflected by two mirrors and directed through a convex lens, hitting a beamsplitter that brought half the light into the user's eye. A virtual image was created 256mm in front, overlaid on the rest of the field of view to create the augmented reality effect. The final measurements and constraints for the optical system are: A convex lens with a diameter of 25mm and a focal point of 71mm. Two first-surface reflecting mirrors, each with a length of 35mm and a height of 15mm. A 50/50 beamsplitter with a length of 50mm and heigh of 30mm. The mirrors were placed at 45 degrees relative to the OLED, and parellel to ensure consistent distances traveled by light across the length of the mirror. The center of the first mirror is 11mm from the screen, and the distance between the two centers of the mirrors were 34mm. The distance from the center of the second mirror iss 11mm from the lens. This creates a total distance of 56mm, being less than the 71mm focal point in order to create a virtual image at -265mm and with a magnification of 4.73. One major change took place during the design of the optical system. A change from a focal point of 32mm to 71mm was required in order to enable a virtual image distance greater than 250mm, the minimum to create a clear image for the human eye. By using optical simulation software, the team was able to design and implment the optical system confidently.
+
+Mechanical System: This system includes the enclousure and lid that houses the optical and hardware systems. This was designed in Fusion 360, with some subsystems designed in Onshape for optimization testing. The enclosure was able to fit all of the hardware including the STM32, OLED, IMU, and buttons. Due to difficulty soldering, not all component ended up being placed inside the enclosure. However, with thinner, more flexible wires, parts would comfortably fit inside as measurement were validated with calipers and assembled with CAD. The optical distances were accurately reflected in the CAD design, which enabled a clear image to be seen on the first attempt. 
+
+Hardware System:
+
+Firmware System:
 
 #### 3.1 Software Requirements Specification (SRS) Results
 
