@@ -130,11 +130,14 @@ On Demo day, the smart glasses will be demonstrated by having someone wear them.
 
 -> Basic interrupt or GPIO functionality
 
-3. Calculated object distance (d0) constraints from a target virtual image distance (d1) and magnifcation (m0) constraint.
 
-   [d0 calculator (32)](https://www.desmos.com/calculator/zhws0yhlh0)
+3. Replaced the transparent OLED with a DFR0934 along with a different design (described below) for handling the optics. This was done because the the transparent OLED would not be visible at such a close distance.
+4. Calculated object distance (d0) constraints from a target virtual image distance (d1) and magnifcation (m0) constraint.
 
-   ![1775258313158](image/README/1775258313158.png)
+[d0 calculator (32)](https://www.desmos.com/calculator/zhws0yhlh0)
+
+![1775258313158](image/README/1775258313158.png)
+
 4. Designed the mechanical layout for the hardware and optics Determined methods to reduce d0 due to limited focal length, and reduce mount size by adding a secondary mirror.
 
    ![1775258730277](image/README/1775258730277.jpg)
@@ -265,9 +268,11 @@ We are well on track and keeping each other up to date with progress.
 
 ## MVP Demo
 
-**Refined System Diagram:**
+**Refined System Diagram (MVP Demo & Final Diagram):**
 
-![1776481041381](image/README/1776481041381.png)
+![1777328555019](image/README/1777328555019.png)
+
+Note: this diagram only shows 4 buttons instead of 5 since the fifth button on the final product was used to replace a non-functional button due to one of the GPIO pins breaking.
 
 **Firmware Impementation:**
 
@@ -397,9 +402,9 @@ Optical System: The optical subsystem was highly successful, creating a visible 
 
 Mechanical System: This system includes the enclousure and lid that houses the optical and hardware systems. This was designed in Fusion 360, with some subsystems designed in Onshape for optimization testing. The enclosure was able to fit all of the hardware including the STM32, OLED, IMU, and buttons. Due to difficulty soldering, not all component ended up being placed inside the enclosure. However, with thinner, more flexible wires, parts would comfortably fit inside as measurement were validated with calipers and assembled with CAD. The optical distances were accurately reflected in the CAD design, which enabled a clear image to be seen on the first attempt.
 
-Hardware System:
+Hardware & Firmware System: The hardware in the final product includes an STM32F411CEU6 (STM32 Black Pill) for its small form factor. One of the five SPI peripherals, specifically SPI4, is used to communicate and display information on the DFR0934 OLED, which served as our main output device. The glasses had 2 main input devices. The first, using the SPI2 peripheral, is the LSM6DS0 IMU that records the step count into a register. The second, using an ADC, is a photoresistor divider that captures the ambient light intensity, which allows the system to automatically adjust OLED brightness. Using the step count, the speed was also approximated (in MPH) and displayed onto the OLED screen. To interface with the smart glasses, 4 buttons were used to trigger external interrupts via GPIO pins.
 
-Firmware System:
+To keep the firmware organized, the drivers and code for the SPI peripherals, OLED, ADC, etc. were managed in different files. The main.c file then connects these different files to manage the main GUI. The GUI consisted of 5 distinct screens that the user could cycle through: the welcome screen, time screen, step-count screen, countdown timer screen, and brightness control screen.
 
 #### 3.1 Software Requirements Specification (SRS) Results
 
