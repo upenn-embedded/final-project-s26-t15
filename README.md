@@ -378,6 +378,8 @@ If you’ve never made a GitHub pages website before, you can follow this webpag
 
 ### 1. Video
 
+Link: https://drive.google.com/file/d/1iFLSCSgxxamlYA9-O-7qOhsk4T2GP4I9/view?usp=sharing
+
 ### 2. Images
 
 Demo Day Success:
@@ -395,6 +397,18 @@ Visible Projection:
 Final CAD:
 
 ![1777258663523](image/README/1777258663523.png)
+
+Electrical Systems:
+![Electrical Systems](image/README/PXL_20260427_211707224.jpg)
+
+Firmware and Drivers:
+![Firmware and Drivers](image\README\firmware.png)
+
+Isometric View:
+![Isometric View](image\README\PXL_20260427_211601018.jpg)
+
+Side View:
+![Side View](image\README\PXL_20260427_211655618.jpg)
 
 ### 3. Results
 
@@ -414,7 +428,7 @@ To keep the firmware organized, the drivers and code for the SPI peripherals, OL
 | SRS-02 | The step detection algorithm shall detect a walking step within 400ms of it occurring, with no more than 10% error over a 20-step walk test.                                              | Partially Achieved. The LSM6DS0 6-axis IMU's step data was accurately updated within 400ms of taking a step during testing.. However, while desoldering/re-soldering the STM32 to fit the tight space of the glasses enclosure, the SPI peripheral for the IMU was broken for the final product. |
 | SRS-03 | The display shall update its shown content within 500ms of a button press (full round-trip: glasses ESP32 → base ESP32 → STM32 → base ESP32 → glasses ESP32 → display).              | Not Relevant. The ESP32 was not used due to excessive power consumption. Decided by the first sprint review.                                                                                                                                                                                       |
 | SRS-04 | The STM32 shall synchronize its RTC with NTP time via the base ESP32 over UART once at startup.                                                                                           | Achieved. Although the ESP32 was not used, the RTC fully worked by calibrating it with the time of the computer that flashed the code during compilation.                                                                                                                                          |
-| SRS-05 | The display shall cycle through at least three different modes, such as: time view, step count view, and compass view.                                                                    | Achieved. The glasses had 5 different screens it could cycle through. This is **validated** from the demo video.                                                                                                                                                                                  |
+| SRS-05 | The display shall cycle through at least three different modes, such as: time view, step count view, and compass view.                                                                    | Achieved. The glasses had 5 different screens it could cycle through. This is **validated** from the demo video. A brief demo of this is shown in SRS05-Validation.mp4 in the github. ![SRS05-Validation][SRS05-Validation.mp4] (embedded in the actual website)                                                                                                                                                                                  |
 | SRS-06 | The STM32 shall receive and process data from the base ESP32 over UART within 100ms of transmission.                                                                                      | Not Relevant. The ESP32 is not used.                                                                                                                                                                                                                                                               |
 | SRS-07 | The STM32 shall compute the compass direction from the magnetometer data and display cardinal direction (N, NE, E, SE, S, SW, W, NW) accurate to within ±22.5 degrees after calibration. | Not Relevant. A Magnetometer was not used in the final product.                                                                                                                                                                                                                                    |
 | SRS-08 | The OLED display will communicate using SPI translated through UART wirelessly between the two ESP32S3 modules to maximize screen data bandwidth.                                         | Achieved. Although the ESP32 was not used, the OLED successfully displayed the output via SPI as **validated** in the demo video.                                                                                                                                                                 |
@@ -432,7 +446,9 @@ To keep the firmware organized, the drivers and code for the SPI peripherals, OL
 
 ### 4. Conclusion
 
-Argus successfully demonstrated a functional pair of bare-metal smart glasses built around the STM32F411CEU. Overall, this project was successful as the most important features were completed and demonstrated. The optics and OLED screen, which are the most important features of the project, worked well as shown in the demo video. The virtual image of the OLED display was successfully projected and could be comfortably seen ~10 inches in front of the user's eye. Additionally, the Real-time clock (RTC) and timer also worked accurately as shown in the demo video. There were, however, some challenges/setbacks primarily due to the compact form-factor of the product. To get the IMU, MCU, LDO, OLED screen, and wires to fit inside the enclosure, the header pins we originally prototyped with had to be desoldered. In doing so, too much heat was applied to some pins, resulting in one of the GPIO pins breaking and some of the SPI peripherals also breaking. The OLED's SPI peripheral was still fully functional, however, one of the buttons was not functional, which is why another button was soldered onto another GPIO pin. Additionally, the SPI peripheral communicating with the IMU broke, meaning that the step-count feature was broken on the final product. Despite these setbacks, the IMU worked during initial testing which shows that if another blackpill STM32 was ordered in time, the step counter would've worked. Additionally, all the other features worked well, 
+Argus successfully demonstrated a functional pair of bare-metal smart glasses built around the STM32F411CEU. Overall, this project was successful as the most important features were completed and demonstrated. The optics and OLED screen, which are the most important features of the project, worked well as shown in the demo video. The virtual image of the OLED display was successfully projected and could be comfortably seen ~10 inches in front of the user's eye. Additionally, the Real-time clock (RTC) and timer also worked accurately as shown in the demo video. There were, however, some challenges/setbacks primarily due to the compact form-factor of the product. To get the IMU, MCU, LDO, OLED screen, and wires to fit inside the enclosure, the header pins we originally prototyped with had to be desoldered. In doing so, too much heat was applied to some pins, resulting in one of the GPIO pins breaking and some of the SPI peripherals also breaking. The OLED's SPI peripheral was still fully functional, however, one of the buttons was not functional, which is why another button was soldered onto another GPIO pin. Additionally, the SPI peripheral communicating with the IMU broke, meaning that the step-count feature was broken on the final product. Despite these setbacks, the IMU worked during initial testing which shows that if another blackpill STM32 was ordered in time, the step counter would've worked. All other features functioned well.
+
+From this experience, we learned that building a prototype involves not only just prototyping, but also integrating the final product. Ultimately, this is where we struggled the most to turn design and MVP into functional product. Working with the large Nucleo board was much easier than a STM32 Black Pill with many pins missing functionality. In the future, we would be more deliberate in choosing and assembling parts. Several of the first IMUs chosen simply could not work due to issues between STM32 and those specific I2C peripherals, and even prototyping would have been more deliberate (mostly not soldering in those jumper pins because removing those broke our board). Additionally, we would have bought at least one more board for redundancy. As a next step, we really wanted to pursue more navigational features. We think that Argus could have great application as a tool to notify you in situations where you should keep your attention ahead of yourself, so integration with maps or a compass with more intensive bio-tracking could turn this into a much more functional product.
 
 ## References
 
