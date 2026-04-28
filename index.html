@@ -432,6 +432,8 @@
 
     /* VALIDATION TABLE */
     .val-pass { color: var(--green); font-weight: 600; }
+    .val-partial { color: var(--yellow); font-weight: 600; }
+    .val-na { color: var(--muted); font-weight: 600; }
 
     /* FOOTER */
     footer {
@@ -589,8 +591,43 @@
         <tbody>
           <tr>
             <td>SRS-01</td>
-            <td>The IMU 3-axis acceleration will be measured with 16-bit depth every 100 milliseconds ±10 milliseconds.</td>
-            <td><span class="val-pass">✓ Confirmed</span> — logged output from the MCU saved to "validation" folder in GitHub repository.</td>
+            <td>The STM32 shall read the IMU accelerometer data over I2C or SPI at a minimum rate of 50 Hz to enable accurate step detection.</td>
+            <td><span class="val-partial">~ Partial</span> — The LSM6DS0 6-axis IMU's step data was accurately measured over SPI. However, while desoldering/re-soldering the STM32 to fit the tight space of the glasses enclosure, the SPI peripheral for the IMU was broken for the final product.</td>
+          </tr>
+          <tr>
+            <td>SRS-02</td>
+            <td>The step detection algorithm shall detect a walking step within 400ms of it occurring, with no more than 10% error over a 20-step walk test.</td>
+            <td><span class="val-partial">~ Partial</span> — The LSM6DS0's step data was accurately updated within 400ms during testing. However, the SPI peripheral for the IMU was broken during final assembly.</td>
+          </tr>
+          <tr>
+            <td>SRS-03</td>
+            <td>The display shall update its shown content within 500ms of a button press (full round-trip: glasses ESP32 → base ESP32 → STM32 → base ESP32 → glasses ESP32 → display).</td>
+            <td><span class="val-na">N/A</span> — The ESP32 was not used due to excessive power consumption. Decided by the first sprint review.</td>
+          </tr>
+          <tr>
+            <td>SRS-04</td>
+            <td>The STM32 shall synchronize its RTC with NTP time via the base ESP32 over UART once at startup.</td>
+            <td><span class="val-pass">✓ Achieved</span> — Although the ESP32 was not used, the RTC fully worked by calibrating it with the time of the computer that flashed the code during compilation.</td>
+          </tr>
+          <tr>
+            <td>SRS-05</td>
+            <td>The display shall cycle through at least three different modes, such as: time view, step count view, and compass view.</td>
+            <td><span class="val-pass">✓ Achieved</span> — The glasses had five different screens it could cycle through. Validated in the demo video.</td>
+          </tr>
+          <tr>
+            <td>SRS-06</td>
+            <td>The STM32 shall receive and process data from the base ESP32 over UART within 100ms of transmission.</td>
+            <td><span class="val-na">N/A</span> — The ESP32 is not used.</td>
+          </tr>
+          <tr>
+            <td>SRS-07</td>
+            <td>The STM32 shall compute the compass direction from the magnetometer data and display cardinal direction (N, NE, E, SE, S, SW, W, NW) accurate to within ±22.5 degrees after calibration.</td>
+            <td><span class="val-na">N/A</span> — A magnetometer was not used in the final product.</td>
+          </tr>
+          <tr>
+            <td>SRS-08</td>
+            <td>The OLED display will communicate using SPI translated through UART wirelessly between the two ESP32S3 modules to maximize screen data bandwidth.</td>
+            <td><span class="val-pass">✓ Achieved</span> — Although the ESP32 was not used, the OLED successfully displayed output via SPI as validated in the demo video.</td>
           </tr>
         </tbody>
       </table>
@@ -605,8 +642,33 @@
         <tbody>
           <tr>
             <td>HRS-01</td>
-            <td>A distance sensor shall be used for obstacle detection. The sensor shall detect obstacles at a maximum distance of at least 10 cm.</td>
-            <td><span class="val-pass">✓ Confirmed</span> — sensed obstacles up to 15 cm. Video in "validation" folder shows tape measure and logged terminal output.</td>
+            <td>The system shall use an IMU with at least 3-axis accelerometer, 3-axis gyroscope, and 3-axis magnetometer capabilities, communicating over I2C, for step-count and compass data.</td>
+            <td><span class="val-partial">~ Partial</span> — Instead of a 9-axis IMU, a 6-axis IMU successfully worked using SPI.</td>
+          </tr>
+          <tr>
+            <td>HRS-02</td>
+            <td>The display shall be small enough to mount on glasses frames and support at least two lines of text output.</td>
+            <td><span class="val-pass">✓ Achieved</span> — More than two lines of text were supported and the display mounted on the glasses frame as validated in the demo video.</td>
+          </tr>
+          <tr>
+            <td>HRS-03</td>
+            <td>Several push buttons shall be mounted on the glasses frame and register a press within 100ms of actuation to enable mode toggling, parameter changes, and power on/off.</td>
+            <td><span class="val-partial">~ Partial</span> — Buttons are responsive per the demo video. However, there is a 300ms hardcoded delay to prevent debouncing.</td>
+          </tr>
+          <tr>
+            <td>HRS-04</td>
+            <td>Two ESP32 modules shall maintain wireless connection with a round-trip latency of less than 500ms within 5m of distance.</td>
+            <td><span class="val-na">N/A</span> — ESP32 not used.</td>
+          </tr>
+          <tr>
+            <td>HRS-05</td>
+            <td>The STM32 shall communicate with the base ESP32 over UART at a baud rate of at least 9600 bps.</td>
+            <td><span class="val-na">N/A</span> — ESP32 not used.</td>
+          </tr>
+          <tr>
+            <td>HRS-06</td>
+            <td>The glasses shall be powered by a battery capable of powering the glasses for at least 15–30 minutes continuously.</td>
+            <td><span class="val-pass">✓ Achieved</span> — STM32 draws ~45mA, OLED ~15mA, IMU ~5mA, photoresistor ~3.3mA. Total max ~70mA. The LP552530 1S LiPo (350mAh) yields 350mAh ÷ 70mA = 5 hours — well above the 30-minute requirement.</td>
           </tr>
         </tbody>
       </table>
@@ -614,13 +676,12 @@
 
     <h3>4. Conclusion</h3>
     <div class="card">
-      <p style="margin:0;">Overall, the project was mostly successful and the most important features were completed and demonstrated.</p>
+      <p style="margin:0;">Argus successfully demonstrated a functional pair of bare-metal smart glasses built around the STM32F411CEU. Overall, this project was successful as the most important features were completed and demonstrated. The optics and OLED screen worked well as shown in the demo video — the virtual image was successfully projected and could be comfortably seen ~10 inches in front of the user's eye. The real-time clock and timer also worked accurately. There were challenges primarily due to the compact form factor: to fit all components inside the enclosure, header pins had to be desoldered, which applied excess heat to some GPIO pins and SPI peripherals. One button and the IMU's SPI peripheral were broken as a result. Another button was soldered onto a working GPIO pin, and the OLED's SPI peripheral remained fully functional. Despite these setbacks, the IMU worked during initial testing, and with another STM32 the step counter would have worked. All other features performed well.</p>
     </div>
 
     <h3>References</h3>
-    <div class="placeholder">
-      <div class="placeholder-icon">📚</div>
-      <strong>References coming soon</strong>
+    <div class="card">
+      <p style="margin:0;">I. Gbati, <em>Bare-Metal Embedded C Programming: Develop High-Performance Embedded Systems with C for Arm Microcontrollers</em>. Birmingham, UK: Packt Publishing, 2024.</p>
     </div>
   </section>
 
