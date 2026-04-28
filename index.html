@@ -576,9 +576,8 @@
 
     <div class="card" style="margin-bottom:1rem;">
       <h4 style="font-size:0.9rem;font-weight:600;color:var(--accent);margin-bottom:0.6rem;text-transform:uppercase;letter-spacing:0.06em;">Hardware &amp; Firmware Systems</h4>
-      <div class="placeholder" style="margin:0;padding:1rem;">
-        <strong>Details coming soon</strong>
-      </div>
+      <p style="margin:0 0 0.75rem;">The hardware in the final product includes an STM32F411CEU6 (STM32 Black Pill) for its small form factor. One of the five SPI peripherals, specifically SPI4, is used to communicate and display information on the DFR0934 OLED, which served as our main output device. The glasses had two main input devices. The first, using the SPI2 peripheral, is the LSM6DS0 IMU that records the step count. The second, using an ADC, is a photoresistor divider that captures the ambient light intensity, which allows the system to automatically adjust OLED brightness. Using the step count, the speed was also approximated (in MPH) and displayed onto the OLED screen. To interface with the smart glasses, four buttons were used to trigger external interrupts via GPIO pins.</p>
+      <p style="margin:0;">To keep the firmware organized, the drivers and code for the SPI peripherals, OLED, ADC, etc. were managed in different files. The main.c file then connects these different files to manage the main GUI. The GUI consisted of five distinct screens that the user could cycle through: the welcome screen, time screen, step-count screen, countdown timer screen, and brightness control screen.</p>
     </div>
 
     <h4 style="font-size:0.95rem;font-weight:600;color:var(--text);margin:1.5rem 0 0.6rem;">3.1 SRS Results</h4>
@@ -627,6 +626,11 @@
 
   <hr class="divider" />
 
+  <!-- PROPOSAL HEADER -->
+  <section id="proposal-header" style="margin-bottom:2rem;">
+    <h2>Final Project Proposal</h2>
+  </section>
+
   <!-- ABSTRACT -->
   <section id="abstract">
     <h2><span class="sec-num">01</span> Abstract</h2>
@@ -650,10 +654,11 @@
     <div class="img-single">
       <img src="image/README/1773671196132.png" alt="System Block Diagram" />
     </div>
-    <p>The refined system diagram (MVP):</p>
+    <p>The refined system diagram (MVP Demo &amp; Final):</p>
     <div class="img-single">
-      <img src="image/README/1776481041381.png" alt="Refined System Diagram" />
+      <img src="image/README/1777328555019.png" alt="Refined System Diagram" />
     </div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-top:0.5rem;">Note: this diagram only shows four buttons instead of five since the fifth button on the final product was used to replace a non-functional button due to one of the GPIO pins breaking.</p>
   </section>
 
   <!-- DESIGN SKETCHES -->
